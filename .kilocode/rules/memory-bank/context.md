@@ -21,15 +21,16 @@ The template is a clean Next.js 15.5.18 starter with TypeScript and Tailwind CSS
 - [x] Locked Next.js version to 15.5.18 for OpenNext compatibility
 - [x] Verified no TypeScript or lint errors in all files
 - [x] Successful production build (`next build`)
+- [x] Fixed Internal Server Error by replacing home page with a simple client component Dashboard page showing welcome message for KSP Mulia Dana Sejahtera
 
 ## Current Structure
 
 | File/Directory | Purpose | Status |
 |----------------|---------|--------|
-| `src/app/page.tsx` | Home page | ✅ Ready |
+| `src/app/page.tsx` | Home page (Dashboard) | ✅ Ready |
 | `src/app/layout.tsx` | Root layout | ✅ Ready |
 | `src/app/globals.css` | Global styles | ✅ Ready |
-| `src/app/dashboard/page.tsx` | Dashboard page | ✅ Ready |
+| `src/app/dashboard/page.tsx` | Dashboard page (alternative route) | ✅ Ready |
 | `src/app/anggota/page.tsx` | Anggota page | ✅ Ready |
 | `src/app/simpanan/page.tsx` | Simpanan page | ✅ Ready |
 | `src/app/pinjaman/page.tsx` | Pinjaman page | ✅ Ready |
@@ -101,3 +102,4 @@ export async function GET() {
 | 2026-05-29 | Added Sidebar navigation and pages for KSP Mulia Dana Sejahtera application |
 | 2026-05-29 | Verified build success and fixed any potential syntax issues |
 | 2026-05-29 | Downgraded Next.js to 15.5.18 for OpenNext compatibility and rebuilt successfully |
+| 2026-05-29 | Fixed Internal Server Error by updating home page with welcome message |
