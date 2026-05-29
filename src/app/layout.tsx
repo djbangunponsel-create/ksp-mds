@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "A minimal Next.js starter template",
 };
 
+import Sidebar from '@/components/Sidebar';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +29,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div className="flex min-h-screen">
+          <Sidebar />
+          <main className="flex-1 p-6">{children}</main>
+        </div>
       </body>
     </html>
   );
