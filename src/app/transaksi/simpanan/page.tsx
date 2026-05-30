@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Printer } from 'lucide-react';
 
 interface Anggota {
   No_Anggota: string;
@@ -98,11 +99,9 @@ export default function TransaksiSimpananPage() {
   const [transaksi, setTransaksi] = useState<TransaksiSimpanan[]>(() => {
     if (typeof window !== 'undefined') {
       try {
-        // Support both old key name and new key name
         const saved = localStorage.getItem('data_transaksi_simpanan') || localStorage.getItem('transaksi-simpanan');
         if (saved) {
           const parsed = JSON.parse(saved);
-          // Migrate old key to new key if needed
           if (localStorage.getItem('transaksi-simpanan') && !localStorage.getItem('data_transaksi_simpanan')) {
             localStorage.setItem('data_transaksi_simpanan', saved);
             localStorage.removeItem('transaksi-simpanan');
@@ -122,6 +121,8 @@ export default function TransaksiSimpananPage() {
     Nominal: 0,
     Tenor: 0,
   });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterJenis, setFilterJenis] = useState('');
 
   const isSisujang = formData.Jenis_Simpanan === 'Sisujang';
   const selectedAnggota = anggota.find(a => a.No_Anggota === formData.No_Anggota);
@@ -129,12 +130,83 @@ export default function TransaksiSimpananPage() {
     ? getSukuBungaSisujang(formData.Nominal, formData.Tenor)
     : getSukuBungaByJenis(formData.Jenis_Simpanan);
 
+  // Filter transaksi based on search and filter
+  const filteredTransaksi = transaksi.filter(item => {
+    const matchesSearch = searchQuery === '' || 
+      item.Nama_Anggota.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.No_Anggota.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = filterJenis === '' || item.Jenis_Simpanan === filterJenis;
+    return matchesSearch && matchesFilter;
+  });
+
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: name === 'Nominal' || name === 'Tenor' ? parseFloat(value) || 0 : value
     }));
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilterJenis(e.target.value);
+  };
+
+  const handlePrintKwitansi = (item: TransaksiSimpanan) => {
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Kwitansi Transaksi</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          .kwitansi { border: 2px solid #000; padding: 20px; max-width: 600px; margin: 0 auto; }
+          .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+          .logo { font-size: 24px; font-weight: bold; }
+          .content { margin: 20px 0; }
+          .row { display: flex; justify-content: space-between; margin: 10px 0; }
+          .label { font-weight: bold; }
+          .footer { margin-top: 30px; text-align: center; }
+          .signature { margin-top: 50px; display: flex; justify-content: space-around; }
+          @media print { body { padding: 0; } }
+        </style>
+      </head>
+      <body>
+        <div class="kwitansi">
+          <div class="header">
+            <div class="logo">KSP MULIA DANA SEJAHTERA</div>
+            <div>KWITANSI BUKTI SETORAN</div>
+          </div>
+          <div class="content">
+            <div class="row"><span class="label">No Kwitansi:</span> <span>${item.id}</span></div>
+            <div class="row"><span class="label">Tanggal:</span> <span>${item.Tanggal}</span></div>
+            <div class="row"><span class="label">No Anggota:</span> <span>${item.No_Anggota}</span></div>
+            <div class="row"><span class="label">Nama Anggota:</span> <span>${item.Nama_Anggota}</span></div>
+            <div class="row"><span class="label">Jenis Simpanan:</span> <span>${jenisSimpananOptions.find(o => o.value === item.Jenis_Simpanan)?.label || item.Jenis_Simpanan}</span></div>
+            ${item.Tenor ? `<div class="row"><span class="label">Tenor:</span> <span>${item.Tenor} Bulan</span></div>` : ''}
+            <div class="row"><span class="label">Suku Bunga:</span> <span>${item.Suku_Bunga}% p.a</span></div>
+            <div class="row" style="border-top: 1px solid #000; padding-top: 10px; font-size: 18px;"><span class="label">Nominal:</span> <span>Rp ${item.Nominal.toLocaleString()}</span></div>
+          </div>
+          <div class="footer">
+            <p>Terima kasih atas partisipasi Anda</p>
+          </div>
+          <div class="signature">
+            <div>Petugas KSP</div>
+            <div>Anggota</div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -159,7 +231,6 @@ export default function TransaksiSimpananPage() {
       Tanggal: new Date().toISOString().split('T')[0],
     };
 
-    // Save to localStorage first, then update state
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('data_transaksi_simpanan');
@@ -283,6 +354,31 @@ export default function TransaksiSimpananPage() {
         </form>
       </div>
 
+      {/* Search and Filter Controls */}
+      <div className="mb-4 flex gap-4 items-center">
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Cari berdasarkan Nama Anggota atau No_Anggota..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <select
+            value={filterJenis}
+            onChange={handleFilterChange}
+            className="px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Semua Jenis Simpanan</option>
+            {jenisSimpananOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="min-w-full bg-neutral-800 border border-neutral-700">
           <thead>
@@ -298,14 +394,14 @@ export default function TransaksiSimpananPage() {
             </tr>
           </thead>
           <tbody>
-            {transaksi.length === 0 ? (
+            {filteredTransaksi.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-4 py-4 text-center text-neutral-400">
-                  Belum ada data transaksi simpanan
+                  {transaksi.length === 0 ? 'Belum ada data transaksi simpanan' : 'Tidak ada data yang sesuai filter'}
                 </td>
               </tr>
             ) : (
-              transaksi.map((item) => (
+              filteredTransaksi.map((item) => (
                 <tr key={item.id} className="border-t border-neutral-700">
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Tanggal}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.No_Anggota}</td>
@@ -315,12 +411,22 @@ export default function TransaksiSimpananPage() {
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {item.Nominal.toLocaleString()}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Suku_Bunga}%</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
-                    >
-                      Hapus
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handlePrintKwitansi(item)}
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-2 rounded flex items-center gap-1"
+                        title="Cetak Kwitansi"
+                      >
+                        <Printer className="h-3 w-3" />
+                        Cetak Kwitansi
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+                      >
+                        Hapus
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
