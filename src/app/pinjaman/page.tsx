@@ -32,6 +32,9 @@ interface Pinjaman {
   potongan_bpjstk: number;
   jumlah_potongan: number;
   jumlah_bersih: number;
+  opsi_agunan: string;
+  jenis_agunan: string;
+  detail_agunan: string;
 }
 
 const jenisPinjamanOptions = [
@@ -44,6 +47,17 @@ const bungaFlatOptions = [1.65, 1.7, 1.75, 1.8, 1.85, 2];
 const tenorFlatOptions = Array.from({ length: 36 }, (_, i) => i + 1);
 const tenorMusimanOptions = Array.from({ length: 8 }, (_, i) => i + 1);
 const bpjstkBulanOptions = Array.from({ length: 12 }, (_, i) => i + 1);
+
+const jenisAgunanOptions = [
+  'Pendiri',
+  'SHM',
+  'Akta Tanah',
+  'BPKB Roda 2',
+  'BPKB Roda 4',
+  'BPKB Roda 6/8',
+  'Surat 3 Serangkai',
+  'Simpanan (Semua jenis simpanan)',
+];
 
 export default function PinjamanPage() {
   const [anggota, setAnggota] = useState<Anggota[]>(() => {
@@ -78,6 +92,9 @@ export default function PinjamanPage() {
     materaiLembar: 0,
     legalNotaris: '',
     bpjstkBulan: 0,
+    opsi_agunan: '',
+    jenis_agunan: '',
+    detail_agunan: '',
   });
 
   useEffect(() => {
@@ -90,6 +107,7 @@ export default function PinjamanPage() {
 
   const isMusiman = formData.Jenis_Pinjaman === 'Musiman';
   const bungaTerkunci = isMusiman ? 2.5 : formData.Bunga;
+  const menggunakanAgunan = formData.opsi_agunan === 'Ya (Pakai Agunan)';
   
   const angsuranPokokPerBulan = formData.Nominal_Pinjaman && formData.Tenor
     ? Math.round(formData.Nominal_Pinjaman / formData.Tenor)
@@ -173,6 +191,9 @@ export default function PinjamanPage() {
       potongan_bpjstk: potonganBpjstk,
       jumlah_potongan: totalPotongan,
       jumlah_bersih: jumlahBersih,
+      opsi_agunan: formData.opsi_agunan,
+      jenis_agunan: formData.jenis_agunan,
+      detail_agunan: formData.detail_agunan,
     };
 
     setPinjaman(prev => [...prev, newPinjaman]);
@@ -186,6 +207,9 @@ export default function PinjamanPage() {
       materaiLembar: 0,
       legalNotaris: '',
       bpjstkBulan: 0,
+      opsi_agunan: '',
+      jenis_agunan: '',
+      detail_agunan: '',
     });
   };
 
@@ -244,6 +268,48 @@ export default function PinjamanPage() {
                 required
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Opsi Agunan</label>
+              <select
+                name="opsi_agunan"
+                value={formData.opsi_agunan}
+                onChange={handleFormChange}
+                className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Pilih Opsi</option>
+                <option value="Tidak Pakai Agunan">Tidak Pakai Agunan</option>
+                <option value="Ya (Pakai Agunan)">Ya (Pakai Agunan)</option>
+              </select>
+            </div>
+            {menggunakanAgunan && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Jenis Agunan</label>
+                  <select
+                    name="jenis_agunan"
+                    value={formData.jenis_agunan}
+                    onChange={handleFormChange}
+                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Pilih Jenis Agunan</option>
+                    {jenisAgunanOptions.map(jenis => (
+                      <option key={jenis} value={jenis}>{jenis}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Detail / No. Agunan</label>
+                  <input
+                    type="text"
+                    name="detail_agunan"
+                    value={formData.detail_agunan}
+                    onChange={handleFormChange}
+                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Masukkan nomor/keterangan agunan"
+                  />
+                </div>
+              </>
+            )}
             {isMusiman ? (
               <div>
                 <label className="block text-sm font-medium mb-1">Bunga (% per bulan) - Terkunci</label>
@@ -391,6 +457,9 @@ export default function PinjamanPage() {
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Nominal</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Jangka Waktu</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Bunga</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Opsi Agunan</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Jenis Agunan</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Detail Agunan</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Status</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Aksi</th>
             </tr>
@@ -398,7 +467,7 @@ export default function PinjamanPage() {
           <tbody>
             {pinjaman.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-4 text-center text-neutral-400">Belum ada data pinjaman</td>
+                <td colSpan={11} className="px-4 py-4 text-center text-neutral-400">Belum ada data pinjaman</td>
               </tr>
             ) : (
               pinjaman.map((item) => (
@@ -409,6 +478,9 @@ export default function PinjamanPage() {
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {formatRupiah(item.Nominal_Pinjaman)}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Tenor} bulan</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Bunga}%</td>
+                  <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.opsi_agunan}</td>
+                  <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.jenis_agunan}</td>
+                  <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.detail_agunan}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Status}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">
                     <button onClick={() => handleDelete(item.id)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">Hapus</button>
