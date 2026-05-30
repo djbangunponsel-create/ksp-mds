@@ -23,6 +23,15 @@ interface Pinjaman {
   Bunga: number;
   Status: 'Aktif' | 'Lunas';
   Tanggal: string;
+  potongan_administrasi: number;
+  potongan_danaSosial: number;
+  potongan_danaRisiko: number;
+  potongan_insentifPJ: number;
+  potongan_materai: number;
+  potongan_legalNotaris: number;
+  potongan_bpjstk: number;
+  jumlah_potongan: number;
+  jumlah_bersih: number;
 }
 
 const jenisPinjamanOptions = [
@@ -34,6 +43,7 @@ const bungaFlatOptions = [1.65, 1.7, 1.75, 1.8, 1.85, 2];
 
 const tenorFlatOptions = Array.from({ length: 36 }, (_, i) => i + 1);
 const tenorMusimanOptions = Array.from({ length: 8 }, (_, i) => i + 1);
+const bpjstkBulanOptions = Array.from({ length: 12 }, (_, i) => i + 1);
 
 export default function PinjamanPage() {
   const [anggota, setAnggota] = useState<Anggota[]>(() => {
@@ -64,6 +74,10 @@ export default function PinjamanPage() {
     Nominal_Pinjaman: 0,
     Tenor: 0,
     Bunga: 0,
+    tanpaAgunan: false,
+    materaiLembar: 0,
+    legalNotaris: '',
+    bpjstkBulan: 0,
   });
 
   useEffect(() => {
@@ -85,9 +99,26 @@ export default function PinjamanPage() {
     ? Math.round((formData.Nominal_Pinjaman * bungaTerkunci) / 100)
     : 0;
 
+  const potonganAdministrasi = formData.Nominal_Pinjaman ? Math.round(formData.Nominal_Pinjaman * 0.02) : 0;
+  const potonganDanaSosial = formData.Nominal_Pinjaman ? Math.round(formData.Nominal_Pinjaman * 0.01) : 0;
+  const potonganDanaRisiko = formData.Nominal_Pinjaman ? Math.round(formData.Nominal_Pinjaman * 0.01) : 0;
+  const potonganInsentifPJ = formData.tanpaAgunan && formData.Nominal_Pinjaman ? Math.round(formData.Nominal_Pinjaman * 0.01) : 0;
+  const potonganMaterai = formData.materaiLembar > 0 ? formData.materaiLembar * 12000 : 0;
+  const potonganLegalNotaris = formData.legalNotaris === 'Ya' ? 400000 : 0;
+  const potonganBpjstk = formData.bpjstkBulan > 0 ? formData.bpjstkBulan * 20000 : 0;
+
+  const totalPotongan = potonganAdministrasi + potonganDanaSosial + potonganDanaRisiko + potonganInsentifPJ + potonganMaterai + potonganLegalNotaris + potonganBpjstk;
+  const jumlahBersih = formData.Nominal_Pinjaman - totalPotongan;
+
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    if (name === 'Nominal_Pinjaman') {
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData(prev => ({
+        ...prev,
+        [name]: checked
+      }));
+    } else if (name === 'Nominal_Pinjaman') {
       const rawValue = value.replace(/\./g, '');
       setFormData(prev => ({
         ...prev,
@@ -98,7 +129,7 @@ export default function PinjamanPage() {
         ...prev,
         [name]: parseFloat(value) || 0
       }));
-    } else if (name === 'Tenor') {
+    } else if (name === 'Tenor' || name === 'materaiLembar' || name === 'bpjstkBulan') {
       setFormData(prev => ({
         ...prev,
         [name]: parseInt(value) || 0
@@ -122,8 +153,10 @@ export default function PinjamanPage() {
       return;
     }
 
+    // eslint-disable-next-line react-hooks/purity
+    const timestamp = Date.now();
     const newPinjaman: Pinjaman = {
-      id: Date.now().toString(),
+      id: `pinjaman-${timestamp}`,
       No_Anggota: formData.No_Anggota,
       Jenis_Pinjaman: formData.Jenis_Pinjaman,
       Nominal_Pinjaman: formData.Nominal_Pinjaman,
@@ -131,6 +164,15 @@ export default function PinjamanPage() {
       Bunga: bungaTerkunci,
       Status: 'Aktif',
       Tanggal: new Date().toISOString().split('T')[0],
+      potongan_administrasi: potonganAdministrasi,
+      potongan_danaSosial: potonganDanaSosial,
+      potongan_danaRisiko: potonganDanaRisiko,
+      potongan_insentifPJ: potonganInsentifPJ,
+      potongan_materai: potonganMaterai,
+      potongan_legalNotaris: potonganLegalNotaris,
+      potongan_bpjstk: potonganBpjstk,
+      jumlah_potongan: totalPotongan,
+      jumlah_bersih: jumlahBersih,
     };
 
     setPinjaman(prev => [...prev, newPinjaman]);
@@ -140,6 +182,10 @@ export default function PinjamanPage() {
       Nominal_Pinjaman: 0,
       Tenor: 0,
       Bunga: 0,
+      tanpaAgunan: false,
+      materaiLembar: 0,
+      legalNotaris: '',
+      bpjstkBulan: 0,
     });
   };
 
@@ -240,17 +286,90 @@ export default function PinjamanPage() {
               </select>
             </div>
             
-            {formData.Nominal_Pinjaman > 0 && formData.Tenor > 0 && (
-              <div className="col-span-2 bg-neutral-700 p-3 rounded">
-                <div className="text-sm font-medium text-neutral-200 mb-2">Estimasi Angsuran per Bulan:</div>
-                <div className="text-xs space-y-1">
-                  <div>Angsuran Pokok: <span className="font-bold">Rp {formatRupiah(angsuranPokokPerBulan)}</span></div>
-                  <div>Angsuran Bunga: <span className="font-bold">Rp {formatRupiah(angsuranBungaPerBulan)}</span></div>
-                  <div className="border-t border-neutral-600 pt-1">Total: <span className="font-bold">Rp {formatRupiah(angsuranPokokPerBulan + angsuranBungaPerBulan)}</span></div>
-                </div>
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium mb-1">Materai (lembar)</label>
+              <input
+                type="number"
+                name="materaiLembar"
+                value={formData.materaiLembar}
+                onChange={handleFormChange}
+                className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                min="0"
+                placeholder="Jumlah lembar"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Legalisasi Notaris</label>
+              <select
+                name="legalNotaris"
+                value={formData.legalNotaris}
+                onChange={handleFormChange}
+                className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Tidak</option>
+                <option value="Ya">Ya</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Iuran BPJSTK (bulan)</label>
+              <select
+                name="bpjstkBulan"
+                value={formData.bpjstkBulan}
+                onChange={handleFormChange}
+                className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={0}>Pilih Bulan</option>
+                {bpjstkBulanOptions.map(b => (
+                  <option key={b} value={b}>{b} Bulan</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="col-span-2">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="tanpaAgunan"
+                  checked={formData.tanpaAgunan}
+                  onChange={handleFormChange}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">Tanpa Agunan / Nilai Jual Agunan Kurang (potong 1%)</span>
+              </label>
+            </div>
           </div>
+          
+          {formData.Nominal_Pinjaman > 0 && (
+            <div className="col-span-2 bg-neutral-700 p-3 rounded mt-4">
+              <div className="text-sm font-medium text-neutral-200 mb-2">Estimasi Potongan & Pencairan:</div>
+              <div className="text-xs space-y-1">
+                <div className="border-b border-neutral-600 pb-1">Total Nominal Pinjaman: <span className="font-bold">Rp {formatRupiah(formData.Nominal_Pinjaman)}</span></div>
+                <div className="text-red-300">Potongan Administrasi (2%): Rp {formatRupiah(potonganAdministrasi)}</div>
+                <div className="text-red-300">Potongan Dana Sosial (1%): Rp {formatRupiah(potonganDanaSosial)}</div>
+                <div className="text-red-300">Potongan Dana Risiko (1%): Rp {formatRupiah(potonganDanaRisiko)}</div>
+                {formData.tanpaAgunan && <div className="text-red-300">Potongan Insentif PJ (1%): Rp {formatRupiah(potonganInsentifPJ)}</div>}
+                <div className="text-red-300">Potongan Materai: Rp {formatRupiah(potonganMaterai)}</div>
+                <div className="text-red-300">Potongan Legal Notaris: Rp {formatRupiah(potonganLegalNotaris)}</div>
+                <div className="text-red-300">Potongan BPJSTK: Rp {formatRupiah(potonganBpjstk)}</div>
+                <div className="border-t border-neutral-600 pt-1">Total Potongan: <span className="font-bold">Rp {formatRupiah(totalPotongan)}</span></div>
+                <div className="border-t-2 border-blue-500 pt-1 text-blue-300">Jumlah Bersih Diterima Anggota: <span className="font-bold">Rp {formatRupiah(jumlahBersih)}</span></div>
+              </div>
+            </div>
+          )}
+          
+          {formData.Nominal_Pinjaman > 0 && formData.Tenor > 0 && (
+            <div className="col-span-2 bg-neutral-700 p-3 rounded mt-2">
+              <div className="text-sm font-medium text-neutral-200 mb-2">Estimasi Angsuran per Bulan:</div>
+              <div className="text-xs space-y-1">
+                <div>Angsuran Pokok: <span className="font-bold">Rp {formatRupiah(angsuranPokokPerBulan)}</span></div>
+                <div>Angsuran Bunga: <span className="font-bold">Rp {formatRupiah(angsuranBungaPerBulan)}</span></div>
+                <div className="border-t border-neutral-600 pt-1">Total: <span className="font-bold">Rp {formatRupiah(angsuranPokokPerBulan + angsuranBungaPerBulan)}</span></div>
+              </div>
+            </div>
+          )}
+          
           <div className="flex justify-end gap-3 mt-4">
             <button
               type="submit"
