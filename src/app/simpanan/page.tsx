@@ -1,7 +1,12 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
 export default function SimpananPage() {
-  return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold">Simpanan</h1>
-    </main>
-  );
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/transaksi/simpanan');
+  }, [router]);
+  return null;
 }
