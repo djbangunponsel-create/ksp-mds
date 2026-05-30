@@ -86,15 +86,33 @@ const getSukuBungaByJenis = (jenis: string): number => {
 export default function TransaksiSimpananPage() {
   const [anggota, setAnggota] = useState<Anggota[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('members');
-      return saved ? JSON.parse(saved) : [];
+      try {
+        const saved = localStorage.getItem('members');
+        return saved ? JSON.parse(saved) : [];
+      } catch {
+        return [];
+      }
     }
     return [];
   });
   const [transaksi, setTransaksi] = useState<TransaksiSimpanan[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('data_transaksi_simpanan');
-      return saved ? JSON.parse(saved) : [];
+      try {
+        // Support both old key name and new key name
+        const saved = localStorage.getItem('data_transaksi_simpanan') || localStorage.getItem('transaksi-simpanan');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          // Migrate old key to new key if needed
+          if (localStorage.getItem('transaksi-simpanan') && !localStorage.getItem('data_transaksi_simpanan')) {
+            localStorage.setItem('data_transaksi_simpanan', saved);
+            localStorage.removeItem('transaksi-simpanan');
+          }
+          return parsed;
+        }
+        return [];
+      } catch {
+        return [];
+      }
     }
     return [];
   });
@@ -104,10 +122,6 @@ export default function TransaksiSimpananPage() {
     Nominal: 0,
     Tenor: 0,
   });
-
-  useEffect(() => {
-    localStorage.setItem('data_transaksi_simpanan', JSON.stringify(transaksi));
-  }, [transaksi]);
 
   const isSisujang = formData.Jenis_Simpanan === 'Sisujang';
   const selectedAnggota = anggota.find(a => a.No_Anggota === formData.No_Anggota);
@@ -145,7 +159,20 @@ export default function TransaksiSimpananPage() {
       Tanggal: new Date().toISOString().split('T')[0],
     };
 
-    setTransaksi(prev => [...prev, newTransaksi]);
+    // Save to localStorage first, then update state
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('data_transaksi_simpanan');
+        const existingData = saved ? JSON.parse(saved) : [];
+        const updatedData = [...existingData, newTransaksi];
+        localStorage.setItem('data_transaksi_simpanan', JSON.stringify(updatedData));
+        setTransaksi(updatedData);
+      } catch (error) {
+        console.error('Failed to save transaction:', error);
+        setTransaksi(prev => [...prev, newTransaksi]);
+      }
+    }
+
     setFormData({
       No_Anggota: '',
       Jenis_Simpanan: 'SP',
@@ -156,7 +183,15 @@ export default function TransaksiSimpananPage() {
 
   const handleDelete = (id: string) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-      setTransaksi(prev => prev.filter(t => t.id !== id));
+      const updatedData = transaksi.filter(t => t.id !== id);
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('data_transaksi_simpanan', JSON.stringify(updatedData));
+        } catch (error) {
+          console.error('Failed to delete transaction:', error);
+        }
+      }
+      setTransaksi(updatedData);
     }
   };
 
