@@ -2,6 +2,12 @@
 
 import { useState, useEffect } from 'react';
 
+const formatRupiah = (value: string | number): string => {
+  const num = typeof value === 'string' ? value.replace(/\./g, '') : value;
+  const parsed = parseInt(num.toString()) || 0;
+  return parsed.toLocaleString('id-ID');
+};
+
 interface Pinjaman {
   id: string;
   No_Anggota: string;
@@ -72,18 +78,34 @@ export default function PinjamanAngsuranPage() {
 
   const handlePinjamanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setPinjamanForm(prev => ({
-      ...prev,
-      [name]: parseFloat(value) || 0
-    }));
+    if (name === 'Nominal_Pinjaman') {
+      const rawValue = value.replace(/\./g, '');
+      setPinjamanForm(prev => ({
+        ...prev,
+        [name]: parseInt(rawValue) || 0
+      }));
+    } else {
+      setPinjamanForm(prev => ({
+        ...prev,
+        [name]: name === 'Tenor' ? parseFloat(value) || 0 : value
+      }));
+    }
   };
 
   const handleAngsuranChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setAngsuranForm(prev => ({
-      ...prev,
-      [name]: parseFloat(value) || 0
-    }));
+    if (name === 'Angsuran_Pokok' || name === 'Angsuran_Bunga') {
+      const rawValue = value.replace(/\./g, '');
+      setAngsuranForm(prev => ({
+        ...prev,
+        [name]: parseInt(rawValue) || 0
+      }));
+    } else {
+      setAngsuranForm(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handlePinjamanSubmit = (e: React.FormEvent) => {
@@ -175,12 +197,12 @@ export default function PinjamanAngsuranPage() {
               <div>
                 <label className="block text-sm font-medium mb-1">Nominal_Pinjaman</label>
                 <input
-                  type="number"
+                  type="text"
                   name="Nominal_Pinjaman"
-                  value={pinjamanForm.Nominal_Pinjaman}
+                  value={pinjamanForm.Nominal_Pinjaman ? formatRupiah(pinjamanForm.Nominal_Pinjaman) : ''}
                   onChange={handlePinjamanChange}
                   className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  min="0"
+                  placeholder="Contoh: 10.000.000"
                   required
                 />
               </div>
@@ -222,24 +244,24 @@ export default function PinjamanAngsuranPage() {
               <div>
                 <label className="block text-sm font-medium mb-1">Angsuran_Pokok</label>
                 <input
-                  type="number"
+                  type="text"
                   name="Angsuran_Pokok"
-                  value={angsuranForm.Angsuran_Pokok}
+                  value={angsuranForm.Angsuran_Pokok ? formatRupiah(angsuranForm.Angsuran_Pokok) : ''}
                   onChange={handleAngsuranChange}
                   className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  min="0"
+                  placeholder="Contoh: 500.000"
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Angsuran_Bunga</label>
                 <input
-                  type="number"
+                  type="text"
                   name="Angsuran_Bunga"
-                  value={angsuranForm.Angsuran_Bunga}
+                  value={angsuranForm.Angsuran_Bunga ? formatRupiah(angsuranForm.Angsuran_Bunga) : ''}
                   onChange={handleAngsuranChange}
                   className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  min="0"
+                  placeholder="Contoh: 50.000"
                   required
                 />
               </div>
@@ -279,7 +301,7 @@ export default function PinjamanAngsuranPage() {
                   <tr key={item.id} className="border-t border-neutral-700">
                     <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Tanggal}</td>
                     <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.No_Anggota}</td>
-                    <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {item.Nominal_Pinjaman.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {formatRupiah(item.Nominal_Pinjaman)}</td>
                     <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Tenor} bulan</td>
                     <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Bunga}%</td>
                     <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Status}</td>
@@ -318,9 +340,9 @@ export default function PinjamanAngsuranPage() {
                   <tr key={item.id} className="border-t border-neutral-700">
                     <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Tanggal}</td>
                     <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.No_Anggota}</td>
-                    <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {item.Angsuran_Pokok.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {item.Angsuran_Bunga.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {(item.Angsuran_Pokok + item.Angsuran_Bunga).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {formatRupiah(item.Angsuran_Pokok)}</td>
+                    <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {formatRupiah(item.Angsuran_Bunga)}</td>
+                    <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {formatRupiah(item.Angsuran_Pokok + item.Angsuran_Bunga)}</td>
                     <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">
                       <button onClick={() => handleDeleteAngsuran(item.id)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">Hapus</button>
                     </td>

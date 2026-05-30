@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Printer } from 'lucide-react';
 
 interface Anggota {
   No_Anggota: string;
@@ -32,6 +33,16 @@ const jenisSimpananOptions = [
 ];
 
 const tenorOptions = [1, 3, 6, 12, 24];
+
+const formatRupiah = (value: string | number): string => {
+  const num = typeof value === 'string' ? value.replace(/\./g, '') : value;
+  const parsed = parseInt(num.toString()) || 0;
+  return parsed.toLocaleString('id-ID');
+};
+
+const parseRupiah = (value: string): number => {
+  return parseInt(value.replace(/\./g, '')) || 0;
+};
 
 const getSukuBungaSisujang = (nominal: number, tenor: number): number => {
   if (nominal >= 250000000) {
@@ -86,15 +97,23 @@ const getSukuBungaByJenis = (jenis: string): number => {
 export default function TransaksiSimpananPage() {
   const [anggota, setAnggota] = useState<Anggota[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('members');
-      return saved ? JSON.parse(saved) : [];
+      try {
+        const saved = localStorage.getItem('members');
+        return saved ? JSON.parse(saved) : [];
+      } catch {
+        return [];
+      }
     }
     return [];
   });
   const [transaksi, setTransaksi] = useState<TransaksiSimpanan[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('data_transaksi_simpanan');
-      return saved ? JSON.parse(saved) : [];
+      try {
+        const saved = localStorage.getItem('data_transaksi_simpanan');
+        return saved ? JSON.parse(saved) : [];
+      } catch {
+        return [];
+      }
     }
     return [];
   });
@@ -104,9 +123,15 @@ export default function TransaksiSimpananPage() {
     Nominal: 0,
     Tenor: 0,
   });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterJenis, setFilterJenis] = useState('');
 
   useEffect(() => {
-    localStorage.setItem('data_transaksi_simpanan', JSON.stringify(transaksi));
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('data_transaksi_simpanan', JSON.stringify(transaksi));
+      } catch {}
+    }
   }, [transaksi]);
 
   const isSisujang = formData.Jenis_Simpanan === 'Sisujang';
@@ -115,12 +140,87 @@ export default function TransaksiSimpananPage() {
     ? getSukuBungaSisujang(formData.Nominal, formData.Tenor)
     : getSukuBungaByJenis(formData.Jenis_Simpanan);
 
+  const filteredTransaksi = transaksi.filter(item => {
+    const matchesSearch = searchQuery === '' || 
+      item.Nama_Anggota.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.No_Anggota.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = filterJenis === '' || item.Jenis_Simpanan === filterJenis;
+    return matchesSearch && matchesFilter;
+  });
+
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'Nominal' || name === 'Tenor' ? parseFloat(value) || 0 : value
-    }));
+    if (name === 'Nominal') {
+      const rawValue = value.replace(/\./g, '');
+      const numericValue = parseInt(rawValue) || 0;
+      setFormData(prev => ({ ...prev, [name]: numericValue }));
+    } else if (name === 'Tenor') {
+      setFormData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilterJenis(e.target.value);
+  };
+
+  const handlePrintKwitansi = (item: TransaksiSimpanan) => {
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Kwitansi Transaksi</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          .kwitansi { border: 2px solid #000; padding: 20px; max-width: 600px; margin: 0 auto; }
+          .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+          .logo { font-size: 24px; font-weight: bold; }
+          .content { margin: 20px 0; }
+          .row { display: flex; justify-content: space-between; margin: 10px 0; }
+          .label { font-weight: bold; }
+          .footer { margin-top: 30px; text-align: center; }
+          .signature { margin-top: 50px; display: flex; justify-content: space-around; }
+          @media print { body { padding: 0; } }
+        </style>
+      </head>
+      <body>
+        <div class="kwitansi">
+          <div class="header">
+            <div class="logo">KSP MULIA DANA SEJAHTERA</div>
+            <div>KWITANSI BUKTI SETORAN</div>
+          </div>
+          <div class="content">
+            <div class="row"><span class="label">No Kwitansi:</span> <span>${item.id}</span></div>
+            <div class="row"><span class="label">Tanggal:</span> <span>${item.Tanggal}</span></div>
+            <div class="row"><span class="label">No Anggota:</span> <span>${item.No_Anggota}</span></div>
+            <div class="row"><span class="label">Nama Anggota:</span> <span>${item.Nama_Anggota}</span></div>
+            <div class="row"><span class="label">Jenis Simpanan:</span> <span>${jenisSimpananOptions.find(o => o.value === item.Jenis_Simpanan)?.label || item.Jenis_Simpanan}</span></div>
+            ${item.Tenor ? `<div class="row"><span class="label">Tenor:</span> <span>${item.Tenor} Bulan</span></div>` : ''}
+            <div class="row"><span class="label">Suku Bunga:</span> <span>${item.Suku_Bunga}% p.a</span></div>
+            <div class="row" style="border-top: 1px solid #000; padding-top: 10px; font-size: 18px;"><span class="label">Nominal:</span> <span>Rp ${formatRupiah(item.Nominal)}</span></div>
+          </div>
+          <div class="footer">
+            <p>Terima kasih atas partisipasi Anda</p>
+          </div>
+          <div class="signature">
+            <div>Petugas KSP</div>
+            <div>Anggota</div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -200,12 +300,12 @@ export default function TransaksiSimpananPage() {
             <div>
               <label className="block text-sm font-medium mb-1">Nominal Transaksi</label>
               <input
-                type="number"
+                type="text"
                 name="Nominal"
-                value={formData.Nominal}
+                value={formData.Nominal ? formatRupiah(formData.Nominal) : ''}
                 onChange={handleFormChange}
                 className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                min="0"
+                placeholder="Contoh: 10.000.000"
                 required
               />
             </div>
@@ -248,6 +348,30 @@ export default function TransaksiSimpananPage() {
         </form>
       </div>
 
+      <div className="mb-4 flex gap-4 items-center">
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Cari berdasarkan Nama Anggota atau No_Anggota..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <select
+            value={filterJenis}
+            onChange={handleFilterChange}
+            className="px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Semua Jenis Simpanan</option>
+            {jenisSimpananOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="min-w-full bg-neutral-800 border border-neutral-700">
           <thead>
@@ -263,29 +387,39 @@ export default function TransaksiSimpananPage() {
             </tr>
           </thead>
           <tbody>
-            {transaksi.length === 0 ? (
+            {filteredTransaksi.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-4 py-4 text-center text-neutral-400">
-                  Belum ada data transaksi simpanan
+                  {transaksi.length === 0 ? 'Belum ada data transaksi simpanan' : 'Tidak ada data yang sesuai filter'}
                 </td>
               </tr>
             ) : (
-              transaksi.map((item) => (
+              filteredTransaksi.map((item) => (
                 <tr key={item.id} className="border-t border-neutral-700">
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Tanggal}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.No_Anggota}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Nama_Anggota}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Jenis_Simpanan}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Tenor ? `${item.Tenor} Bulan` : '-'}</td>
-                  <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {item.Nominal.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {formatRupiah(item.Nominal)}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Suku_Bunga}%</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
-                    >
-                      Hapus
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handlePrintKwitansi(item)}
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-2 rounded flex items-center gap-1"
+                        title="Cetak Kwitansi"
+                      >
+                        <Printer className="h-3 w-3" />
+                        Cetak Kwitansi
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+                      >
+                        Hapus
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

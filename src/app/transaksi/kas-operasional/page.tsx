@@ -2,6 +2,12 @@
 
 import { useState, useEffect } from 'react';
 
+const formatRupiah = (value: string | number): string => {
+  const num = typeof value === 'string' ? value.replace(/\./g, '') : value;
+  const parsed = parseInt(num.toString()) || 0;
+  return parsed.toLocaleString('id-ID');
+};
+
 interface KasOperasional {
   id: string;
   Kategori: string;
@@ -40,10 +46,12 @@ export default function KasOperasionalPage() {
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'Nominal' ? parseFloat(value) || 0 : value
-    }));
+    if (name === 'Nominal') {
+      const rawValue = value.replace(/\./g, '');
+      setFormData(prev => ({ ...prev, [name]: parseInt(rawValue) || 0 }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -114,12 +122,12 @@ export default function KasOperasionalPage() {
             <div className="col-span-2">
               <label className="block text-sm font-medium mb-1">Nominal</label>
               <input
-                type="number"
+                type="text"
                 name="Nominal"
-                value={formData.Nominal}
+                value={formData.Nominal ? formatRupiah(formData.Nominal) : ''}
                 onChange={handleFormChange}
                 className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                min="0"
+                placeholder="Contoh: 10.000.000"
                 required
               />
             </div>
@@ -158,7 +166,7 @@ export default function KasOperasionalPage() {
                       {item.Jenis_Arus}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {item.Nominal.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {formatRupiah(item.Nominal)}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">
                     <button onClick={() => handleDelete(item.id)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">Hapus</button>
                   </td>
