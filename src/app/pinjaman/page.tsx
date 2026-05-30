@@ -8,6 +8,12 @@ const formatRupiah = (value: string | number): string => {
   return parsed.toLocaleString('id-ID');
 };
 
+interface Anggota {
+  No_Anggota: string;
+  NAMA_ANGGOTA: string;
+  [key: string]: string;
+}
+
 interface Pinjaman {
   id: string;
   No_Anggota: string;
@@ -30,6 +36,17 @@ const tenorFlatOptions = Array.from({ length: 36 }, (_, i) => i + 1);
 const tenorMusimanOptions = Array.from({ length: 8 }, (_, i) => i + 1);
 
 export default function PinjamanPage() {
+  const [anggota, setAnggota] = useState<Anggota[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('members');
+        return saved ? JSON.parse(saved) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
   const [pinjaman, setPinjaman] = useState<Pinjaman[]>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -64,7 +81,7 @@ export default function PinjamanPage() {
     ? Math.round(formData.Nominal_Pinjaman / formData.Tenor)
     : 0;
   
-  const angsuranBungaPerBulan = formData.Nominal_Pinjaman && bungaTerkunci
+  const angsuranBungaPerBulan = formData.Nominal_Pinjaman && bungaTerkunci > 0
     ? Math.round((formData.Nominal_Pinjaman * bungaTerkunci) / 100)
     : 0;
 
@@ -140,15 +157,21 @@ export default function PinjamanPage() {
         <form onSubmit={handleSubmit} className="bg-neutral-800 p-6 rounded-lg mb-6 max-w-2xl">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">No_Anggota</label>
-              <input
-                type="text"
+              <label className="block text-sm font-medium mb-1">Pilih Anggota</label>
+              <select
                 name="No_Anggota"
                 value={formData.No_Anggota}
                 onChange={handleFormChange}
                 className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
-              />
+              >
+                <option value="">Pilih Anggota</option>
+                {anggota.map(a => (
+                  <option key={a.No_Anggota} value={a.No_Anggota}>
+                    {a.No_Anggota} - {a.NAMA_ANGGOTA}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Jenis Pinjaman</label>
@@ -247,7 +270,7 @@ export default function PinjamanPage() {
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">No_Anggota</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Jenis_Pinjaman</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Nominal</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Tenor</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Jangka Waktu</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Bunga</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Status</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Aksi</th>
