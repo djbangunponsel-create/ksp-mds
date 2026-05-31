@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import PrintButton from '@/components/PrintButton';
 
 const formatRupiah = (value: number): string => {
   return Math.round(value).toLocaleString('id-ID');
@@ -636,13 +637,16 @@ export default function PinjamanPage() {
         </div>
       </div>
 
-      <div className="shrink-0 bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-        <div className="px-3 py-2.5 bg-zinc-800/40 border-b border-zinc-700/60 flex items-center justify-between">
-          <h3 className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Data Pinjaman Aktif</h3>
-          <span className="text-[10px] text-zinc-500 font-mono">{pinjaman.length} record</span>
-        </div>
-        <div className="max-h-[150px] overflow-y-auto">
-          <table className="min-w-full">
+        <div className="shrink-0 bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+          <div className="px-3 py-2.5 bg-zinc-800/40 border-b border-zinc-700/60 flex items-center justify-between">
+            <h3 className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Data Pinjaman Aktif</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-zinc-500 font-mono">{pinjaman.length} record</span>
+              <PrintButton />
+            </div>
+          </div>
+          <div className="max-h-[150px] overflow-y-auto">
+            <table className="min-w-full" id="print-area">
             <thead className="bg-zinc-800/30 sticky top-0">
               <tr>
                 <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider border-b border-zinc-700/80 border-r border-r-zinc-700/40 bg-zinc-800/50 w-[100px]">Tanggal</th>
