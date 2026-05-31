@@ -25,6 +25,7 @@ interface Pinjaman {
   potongan_danaSosial: number;
   potongan_danaRisiko: number;
   potongan_insentifPJ: number;
+  potongan_insentifPJP: number;
   potongan_materai: number;
   potongan_legalNotaris: number;
   potongan_bpjstk: number;
@@ -93,6 +94,7 @@ export default function PinjamanPage() {
   const sosial = Math.round(nilaiMurni * 0.01);
   const risiko = Math.round(nilaiMurni * 0.01);
   const insentif = formData.tanpaAgunan ? Math.round(nilaiMurni * 0.01) : 0;
+  const insentifPJP = (formData.jenis_agunan === 'Pendiri' || formData.jenis_agunan === 'Simpanan (Semua jenis simpanan)') ? Math.round(nilaiMurni * 0.01) : 0;
 
   const materaiJumlah = formData.notaris === 'Ya' ? 2 : 1;
   const potMaterai = materaiJumlah * 12000;
@@ -104,7 +106,7 @@ export default function PinjamanPage() {
     potBpjstk = formData.bpjstkBulan * 20000;
   }
 
-  const totalPot = admin + sosial + risiko + insentif + potMaterai + potNotaris + potBpjstk;
+  const totalPot = admin + sosial + risiko + insentif + insentifPJP + potMaterai + potNotaris + potBpjstk;
   const bersih = nilaiMurni - totalPot;
 
   const swkPct = Math.round((nilaiMurni * 1) / 100);
@@ -149,6 +151,7 @@ export default function PinjamanPage() {
       potongan_danaSosial: sosial,
       potongan_danaRisiko: risiko,
       potongan_insentifPJ: insentif,
+      potongan_insentifPJP: insentifPJP,
       potongan_materai: potMaterai,
       potongan_legalNotaris: potNotaris,
       potongan_bpjstk: potBpjstk,
@@ -326,6 +329,12 @@ export default function PinjamanPage() {
                     <div className="flex justify-between text-red-400/80">
                       <span>Pot. Insentif PJ (1%)</span>
                       <span>Rp {formatRupiah(insentif)}</span>
+                    </div>
+                  )}
+                  {(formData.jenis_agunan === 'Pendiri' || formData.jenis_agunan === 'Simpanan (Semua jenis simpanan)') && (
+                    <div className="flex justify-between text-red-400/80">
+                      <span>Pot. Insentif PJP (1%)</span>
+                      <span>Rp {formatRupiah(insentifPJP)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-red-400/80">
