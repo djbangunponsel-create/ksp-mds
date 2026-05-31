@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 
 const formatRupiah = (value: number): string => {
-  return value.toLocaleString('id-ID');
+  return Math.round(value).toLocaleString('id-ID');
 };
 
 interface Anggota {
@@ -25,6 +25,7 @@ interface Pinjaman {
   potongan_danaSosial: number;
   potongan_danaRisiko: number;
   potongan_insentifPJ: number;
+  potongan_materai: number;
   potongan_legalNotaris: number;
   potongan_bpjstk: number;
   jumlah_potongan: number;
@@ -40,7 +41,6 @@ const jenisPinjamanOptions = [
 ];
 
 const bungaFlatOptions = [1.65, 1.7, 1.75, 1.8, 1.85, 2];
-
 const tenorFlatOptions = Array.from({ length: 36 }, (_, i) => i + 1);
 const tenorMusimanOptions = Array.from({ length: 8 }, (_, i) => i + 1);
 
@@ -87,14 +87,14 @@ export default function PinjamanPage() {
   const isMusiman = formData.Jenis_Pinjaman === 'Musiman';
   const bungaTerkunci = isMusiman ? 2.5 : formData.Bunga;
 
-  const nilaiMurni = parseFloat((formData.Nominal_Pinjaman || 0).toLocaleString('id-ID').replace(/\./g, '')) || 0;
+  const nilaiMurni = Math.round(parseFloat((formData.Nominal_Pinjaman || 0).toLocaleString('id-ID').replace(/\./g, '')) || 0);
 
-  const admin = (nilaiMurni * 2) / 100;
-  const sosial = (nilaiMurni * 1) / 100;
-  const risiko = (nilaiMurni * 1) / 100;
-  const insentif = formData.tanpaAgunan ? (nilaiMurni * 1) / 100 : 0;
+  const admin = Math.round(nilaiMurni * 0.02);
+  const sosial = Math.round(nilaiMurni * 0.01);
+  const risiko = Math.round(nilaiMurni * 0.01);
+  const insentif = formData.tanpaAgunan ? Math.round(nilaiMurni * 0.01) : 0;
 
-  const materaiJumlah = formData.notaris === "Ya" ? 2 : 1;
+  const materaiJumlah = formData.notaris === 'Ya' ? 2 : 1;
   const potMaterai = materaiJumlah * 12000;
 
   const potNotaris = formData.notaris === 'Ya' ? 400000 : 0;
@@ -107,8 +107,8 @@ export default function PinjamanPage() {
   const totalPot = admin + sosial + risiko + insentif + potMaterai + potNotaris + potBpjstk;
   const bersih = nilaiMurni - totalPot;
 
-  const swkPct = (nilaiMurni * 1) / 100;
-  const swk = formData.swkOption === "1%" ? Math.max(swkPct, 25000) : 25000;
+  const swkPct = Math.round((nilaiMurni * 1) / 100);
+  const swk = formData.swkOption === '1%' ? Math.max(swkPct, 25000) : 25000;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;
@@ -149,6 +149,7 @@ export default function PinjamanPage() {
       potongan_danaSosial: sosial,
       potongan_danaRisiko: risiko,
       potongan_insentifPJ: insentif,
+      potongan_materai: potMaterai,
       potongan_legalNotaris: potNotaris,
       potongan_bpjstk: potBpjstk,
       jumlah_potongan: totalPot,
@@ -183,183 +184,243 @@ export default function PinjamanPage() {
   };
 
   return (
-    <main className="h-screen w-full bg-neutral-900 text-neutral-100 p-4 overflow-hidden flex flex-col">
-      <h1 className="text-2xl font-bold mb-3 shrink-0">Pinjaman</h1>
+    <main className="h-screen overflow-hidden bg-zinc-950 text-neutral-100 p-4 flex flex-col gap-3">
+      <header className="shrink-0">
+        <h1 className="text-2xl font-bold tracking-tight text-white">Pinjaman</h1>
+        <p className="text-xs text-zinc-400 mt-0.5">Kelola data pinjaman anggota KSP</p>
+      </header>
 
-      <form onSubmit={handleSubmit} className="bg-neutral-800 p-4 rounded-lg mb-3 shrink-0">
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="block text-xs font-medium mb-0.5">Pilih Anggota</label>
-            <select name="No_Anggota" value={formData.No_Anggota} onChange={handleChange} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm" required>
-              <option value="">Pilih Anggota</option>
-              {anggota.map(a => <option key={a.No_Anggota} value={a.No_Anggota}>{a.No_Anggota} - {a.NAMA_ANGGOTA}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-0.5">Jenis Pinjaman</label>
-            <select name="Jenis_Pinjaman" value={formData.Jenis_Pinjaman} onChange={handleChange} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm">
-              {jenisPinjamanOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-0.5">Nominal Pinjaman</label>
-            <input type="text" name="Nominal_Pinjaman" value={formData.Nominal_Pinjaman ? formatRupiah(formData.Nominal_Pinjaman) : ''} onChange={handleChange} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm" placeholder="Contoh: 10.000.000" required />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-0.5">Opsi Agunan</label>
-            <select name="opsi_agunan" value={formData.opsi_agunan} onChange={handleChange} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm">
-              <option value="">Pilih Opsi</option>
-              <option value="Tidak Pakai Agunan">Tidak Pakai Agunan</option>
-              <option value="Ya (Pakai Agunan)">Ya (Pakai Agunan)</option>
-            </select>
-          </div>
-          {formData.opsi_agunan === 'Ya (Pakai Agunan)' && (
-            <>
+      <div className="flex-1 min-h-0 flex gap-3">
+        {/* KOLOM KIRI - Form Input */}
+        <div className="w-[60%] shrink-0">
+          <form onSubmit={handleSubmit} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 h-full flex flex-col">
+            <h2 className="text-sm font-semibold text-zinc-200 mb-3">Form Pinjaman</h2>
+            <div className="grid grid-cols-2 gap-2.5 flex-1">
               <div>
-                <label className="block text-xs font-medium mb-0.5">Jenis Agunan</label>
-                <select name="jenis_agunan" value={formData.jenis_agunan} onChange={handleChange} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm">
-                  <option value="">Pilih Jenis</option>
-                  {jenisAgunanOptions.map(j => <option key={j} value={j}>{j}</option>)}
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Pilih Anggota</label>
+                <select name="No_Anggota" value={formData.No_Anggota} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" required>
+                  <option value="">Pilih Anggota</option>
+                  {anggota.map(a => <option key={a.No_Anggota} value={a.No_Anggota}>{a.No_Anggota} - {a.NAMA_ANGGOTA}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium mb-0.5">Detail / No. Agunan</label>
-                <input type="text" name="detail_agunan" value={formData.detail_agunan} onChange={handleChange} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm" placeholder="Nomor/Keterangan" />
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Jenis Pinjaman</label>
+                <select name="Jenis_Pinjaman" value={formData.Jenis_Pinjaman} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+                  {jenisPinjamanOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
               </div>
-            </>
-          )}
-          {isMusiman ? (
-            <div>
-              <label className="block text-xs font-medium mb-0.5">Bunga (Terpilih)</label>
-              <input type="text" value={bungaTerkunci} readOnly className="w-full px-2 py-1.5 bg-neutral-600 text-neutral-300 rounded border border-neutral-600 text-sm" />
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Nominal Pinjaman</label>
+                <input type="text" name="Nominal_Pinjaman" value={formData.Nominal_Pinjaman ? formatRupiah(formData.Nominal_Pinjaman) : ''} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="Contoh: 10.000.000" required />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Suku Bunga (% per bulan)</label>
+                {isMusiman ? (
+                  <input type="text" value={bungaTerkunci} readOnly className="w-full py-2 px-3 bg-zinc-700 text-zinc-300 border border-zinc-600 rounded-lg text-sm" />
+                ) : (
+                  <select name="Bunga" value={formData.Bunga} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+                    <option value={0}>Pilih Bunga</option>
+                    {bungaFlatOptions.map(b => <option key={b} value={b}>{b}%</option>)}
+                  </select>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Jangka Waktu (bulan)</label>
+                <select name="Tenor" value={formData.Tenor} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" required>
+                  <option value={0}>Pilih Tenor</option>
+                  {(isMusiman ? tenorMusimanOptions : tenorFlatOptions).map(t => <option key={t} value={t}>{t} Bulan</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Opsi Agunan</label>
+                <select name="opsi_agunan" value={formData.opsi_agunan} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+                  <option value="">Pilih Opsi</option>
+                  <option value="Tidak Pakai Agunan">Tidak Pakai Agunan</option>
+                  <option value="Ya (Pakai Agunan)">Ya (Pakai Agunan)</option>
+                </select>
+              </div>
+              {formData.opsi_agunan === 'Ya (Pakai Agunan)' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-400 mb-1">Jenis Agunan</label>
+                    <select name="jenis_agunan" value={formData.jenis_agunan} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+                      <option value="">Pilih Jenis</option>
+                      {jenisAgunanOptions.map(j => <option key={j} value={j}>{j}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-400 mb-1">Detail / No. Agunan</label>
+                    <input type="text" name="detail_agunan" value={formData.detail_agunan} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="Nomor/Keterangan" />
+                  </div>
+                </>
+              )}
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Legalisasi Notaris</label>
+                <select name="notaris" value={formData.notaris} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+                  <option value="">Tidak</option>
+                  <option value="Ya">Ya</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Iuran BPJSTK</label>
+                <select name="bpjstk" value={formData.bpjstk} onChange={(e) => { handleChange(e); setUseBulan(e.target.value === 'Ya'); }} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+                  <option value="">Tidak</option>
+                  <option value="Ya">Ya</option>
+                </select>
+              </div>
+              {useBulan && (
+                <div>
+                  <label className="block text-xs font-medium text-zinc-400 mb-1">Jumlah Bulan BPJSTK</label>
+                  <select name="bpjstkBulan" value={formData.bpjstkBulan} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+                    <option value={0}>Pilih Bulan</option>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map(b => <option key={b} value={b}>{b} Bulan</option>)}
+                  </select>
+                </div>
+              )}
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Potongan Materai</label>
+                <input type="text" readOnly value={`${materaiJumlah} lembar (Rp ${formatRupiah(potMaterai)})`} className="w-full py-2 px-3 bg-zinc-700 text-zinc-300 border border-zinc-600 rounded-lg text-sm cursor-not-allowed" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Opsi SWK</label>
+                <select name="swkOption" value={formData.swkOption} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+                  <option value="1%">1% dari Pinjaman</option>
+                  <option value="flat">Flat Rp 25.000</option>
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="tanpaAgunan" checked={formData.tanpaAgunan} onChange={handleChange} className="w-4 h-4 rounded bg-zinc-800 border-zinc-600 text-blue-500 focus:ring-blue-500/50" />
+                  <span className="text-xs text-zinc-300">Tanpa Agunan / Nilai Jual Agunan Kurang (potong 1%)</span>
+                </label>
+              </div>
             </div>
-          ) : (
-            <div>
-              <label className="block text-xs font-medium mb-0.5">Suku Bunga (% per bulan)</label>
-              <select name="Bunga" value={formData.Bunga} onChange={handleChange} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm">
-                <option value={0}>Pilih Bunga</option>
-                {bungaFlatOptions.map(b => <option key={b} value={b}>{b}%</option>)}
-              </select>
-            </div>
-          )}
-          <div>
-            <label className="block text-xs font-medium mb-0.5">Jangka Waktu (bulan)</label>
-            <select name="Tenor" value={formData.Tenor} onChange={handleChange} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm" required>
-              <option value={0}>Pilih Tenor</option>
-              {(isMusiman ? tenorMusimanOptions : tenorFlatOptions).map(t => <option key={t} value={t}>{t} Bulan</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-0.5">Legalisasi Notaris</label>
-            <select name="notaris" value={formData.notaris} onChange={handleChange} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm">
-              <option value="">Tidak</option>
-              <option value="Ya">Ya</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-0.5">Iuran BPJSTK</label>
-            <select name="bpjstk" value={formData.bpjstk} onChange={(e) => { handleChange(e); setUseBulan(e.target.value === 'Ya'); }} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm">
-              <option value="">Tidak</option>
-              <option value="Ya">Ya</option>
-            </select>
-          </div>
-          {useBulan && (
-            <div>
-              <label className="block text-xs font-medium mb-0.5">Jumlah Bulan BPJSTK</label>
-              <select name="bpjstkBulan" value={formData.bpjstkBulan} onChange={handleChange} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm">
-                <option value={0}>Pilih Bulan</option>
-                {Array.from({ length: 12 }, (_, i) => i + 1).map(b => <option key={b} value={b}>{b} Bulan</option>)}
-              </select>
-            </div>
-          )}
-          <div>
-            <label className="block text-xs font-medium mb-0.5">Potongan Materai</label>
-            <input type="text" readOnly value={`${materaiJumlah} lembar (Rp ${formatRupiah(potMaterai)})`} className="w-full px-2 py-1.5 bg-neutral-600 text-neutral-300 rounded border border-neutral-600 text-sm" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-0.5">Opsi SWK</label>
-            <select name="swkOption" value={formData.swkOption} onChange={handleChange} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm">
-              <option value="1%">1% dari Pinjaman</option>
-              <option value="flat">Flat Rp 25.000</option>
-            </select>
-          </div>
-          <div className="col-span-2">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" name="tanpaAgunan" checked={formData.tanpaAgunan} onChange={handleChange} className="w-3.5 h-3.5" />
-              <span className="text-xs">Tanpa Agunan / Nilai Jual Agunan Kurang (potong 1%)</span>
-            </label>
-          </div>
+          </form>
         </div>
-      </form>
 
-      {(formData.Nominal_Pinjaman > 0 || formData.Tenor > 0) && (
-        <div className="flex gap-3 mb-2 shrink-0">
-          {formData.Nominal_Pinjaman > 0 && (
-            <div className="flex-1 bg-neutral-700 p-2.5 rounded">
-              <div className="text-xs font-medium text-neutral-200 mb-1">Estimasi Potongan & Pencairan:</div>
-              <div className="text-[11px] space-y-0.5 leading-tight">
-                <div>Jumlah Pinjaman Nominal: <span className="font-bold">Rp {formatRupiah(nilaiMurni)}</span></div>
-                <div className="text-red-300">Pot. Administrasi (2%): Rp {formatRupiah(admin)}</div>
-                <div className="text-red-300">Pot. Dana Sosial (1%): Rp {formatRupiah(sosial)}</div>
-                <div className="text-red-300">Pot. Dana Risiko (1%): Rp {formatRupiah(risiko)}</div>
-                {formData.tanpaAgunan && <div className="text-red-300">Pot. Insentif PJ (1%): Rp {formatRupiah(insentif)}</div>}
-                <div className="text-red-300">Pot. Materai ({materaiJumlah} lembar): Rp {formatRupiah(potMaterai)}</div>
-                <div className="text-red-300">Pot. Legal Notaris: Rp {formatRupiah(potNotaris)}</div>
-                <div className="text-red-300">Pot. BPJSTK ({formData.bpjstkBulan} bln): Rp {formatRupiah(potBpjstk)}</div>
-                <div className="border-t border-neutral-600 pt-0.5">Total Potongan: <span className="font-bold">Rp {formatRupiah(totalPot)}</span></div>
-                <div className="border-t-2 border-blue-500 pt-0.5 text-blue-300">Bersih Diterima: <span className="font-bold">Rp {formatRupiah(bersih)}</span></div>
+        {/* KOLOM KANAN - Estimasi & Aksi */}
+        <div className="w-[40%] shrink-0 flex flex-col gap-3">
+          <div className="flex-1 flex flex-col gap-3 min-h-0">
+            {/* Box Estimasi Potongan */}
+            {formData.Nominal_Pinjaman > 0 && (
+              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex-1">
+                <h3 className="text-xs font-semibold text-zinc-300 mb-2 uppercase tracking-wider">Estimasi Potongan & Pencairan</h3>
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between text-zinc-400">
+                    <span>Jumlah Pinjaman Nominal</span>
+                    <span className="font-semibold text-white">Rp {formatRupiah(nilaiMurni)}</span>
+                  </div>
+                  <div className="flex justify-between text-red-400/80">
+                    <span>Pot. Administrasi (2%)</span>
+                    <span>Rp {formatRupiah(admin)}</span>
+                  </div>
+                  <div className="flex justify-between text-red-400/80">
+                    <span>Pot. Dana Sosial (1%)</span>
+                    <span>Rp {formatRupiah(sosial)}</span>
+                  </div>
+                  <div className="flex justify-between text-red-400/80">
+                    <span>Pot. Dana Risiko (1%)</span>
+                    <span>Rp {formatRupiah(risiko)}</span>
+                  </div>
+                  {formData.tanpaAgunan && (
+                    <div className="flex justify-between text-red-400/80">
+                      <span>Pot. Insentif PJ (1%)</span>
+                      <span>Rp {formatRupiah(insentif)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-red-400/80">
+                    <span>Pot. Materai ({materaiJumlah} lembar)</span>
+                    <span>Rp {formatRupiah(potMaterai)}</span>
+                  </div>
+                  <div className="flex justify-between text-red-400/80">
+                    <span>Pot. Legal Notaris</span>
+                    <span>Rp {formatRupiah(potNotaris)}</span>
+                  </div>
+                  <div className="flex justify-between text-red-400/80">
+                    <span>Pot. BPJSTK ({formData.bpjstkBulan} bln)</span>
+                    <span>Rp {formatRupiah(potBpjstk)}</span>
+                  </div>
+                  <div className="border-t border-zinc-700 pt-1.5 flex justify-between text-zinc-200">
+                    <span className="font-medium">Total Potongan</span>
+                    <span className="font-bold">Rp {formatRupiah(totalPot)}</span>
+                  </div>
+                  <div className="border-t-2 border-blue-500/50 pt-1.5 flex justify-between text-emerald-400">
+                    <span className="font-medium">Bersih Diterima</span>
+                    <span className="font-bold">Rp {formatRupiah(bersih)}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
-          {formData.Nominal_Pinjaman > 0 && formData.Tenor > 0 && (
-            <div className="flex-1 bg-neutral-700 p-2.5 rounded">
-              <div className="text-xs font-medium text-neutral-200 mb-1">Estimasi Angsuran per Bulan:</div>
-              <div className="text-[11px] space-y-0.5 leading-tight">
-                <div>Pokok: <span className="font-bold">Rp {formatRupiah(Math.round(nilaiMurni / formData.Tenor))}</span></div>
-                <div>Bunga: <span className="font-bold">Rp {formatRupiah(Math.round((nilaiMurni * bungaTerkunci) / 100))}</span></div>
-                <div>SWK: <span className="font-bold">Rp {formatRupiah(swk)}</span></div>
-                <div className="border-t border-neutral-600 pt-0.5">Total Angsuran per Bulan: <span className="font-bold">Rp {formatRupiah(Math.round(nilaiMurni / formData.Tenor) + Math.round((nilaiMurni * bungaTerkunci) / 100) + Math.round(swk))}</span></div>
+            )}
+
+            {/* Box Estimasi Angsuran */}
+            {formData.Nominal_Pinjaman > 0 && formData.Tenor > 0 && (
+              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex-1">
+                <h3 className="text-xs font-semibold text-zinc-300 mb-2 uppercase tracking-wider">Estimasi Angsuran per Bulan</h3>
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between text-zinc-400">
+                    <span>Angsuran Pokok</span>
+                    <span className="font-semibold text-white">Rp {formatRupiah(Math.round(nilaiMurni / formData.Tenor))}</span>
+                  </div>
+                  <div className="flex justify-between text-zinc-400">
+                    <span>Angsuran Bunga</span>
+                    <span className="font-semibold text-white">Rp {formatRupiah(Math.round((nilaiMurni * bungaTerkunci) / 100))}</span>
+                  </div>
+                  <div className="flex justify-between text-blue-400/80">
+                    <span>SWK (1%)</span>
+                    <span>Rp {formatRupiah(swk)}</span>
+                  </div>
+                  <div className="border-t border-zinc-700 pt-1.5 flex justify-between text-white">
+                    <span className="font-medium">Total Angsuran per Bulan</span>
+                    <span className="font-bold">Rp {formatRupiah(Math.round(nilaiMurni / formData.Tenor) + Math.round((nilaiMurni * bungaTerkunci) / 100) + swk)}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* Tombol Simpan */}
+          <button type="submit" className="shrink-0 w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors text-sm">
+            Simpan Pinjaman
+          </button>
         </div>
-      )}
-
-      <div className="shrink-0 mb-2">
-        <button type="submit" className="block mx-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-6 rounded text-sm">Simpan Pinjaman</button>
       </div>
 
-      <div className="flex-1 min-h-0 bg-neutral-800 rounded-lg border border-neutral-700 flex flex-col">
-        <div className="overflow-y-auto flex-1">
+      {/* Tabel Data Pinjaman */}
+      <div className="shrink-0 bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+        <div className="max-h-[160px] overflow-y-auto">
           <table className="min-w-full">
-            <thead className="bg-neutral-700 sticky top-0">
+            <thead className="bg-zinc-800/50 sticky top-0">
               <tr>
-                <th className="px-2 py-1.5 text-left text-xs font-medium text-neutral-300 border-b border-neutral-600">Tanggal</th>
-                <th className="px-2 py-1.5 text-left text-xs font-medium text-neutral-300 border-b border-neutral-600">No_Anggota</th>
-                <th className="px-2 py-1.5 text-left text-xs font-medium text-neutral-300 border-b border-neutral-600">Jenis</th>
-                <th className="px-2 py-1.5 text-left text-xs font-medium text-neutral-300 border-b border-neutral-600">Nominal</th>
-                <th className="px-2 py-1.5 text-left text-xs font-medium text-neutral-300 border-b border-neutral-600">Tenor</th>
-                <th className="px-2 py-1.5 text-left text-xs font-medium text-neutral-300 border-b border-neutral-600">Bunga</th>
-                <th className="px-2 py-1.5 text-left text-xs font-medium text-neutral-300 border-b border-neutral-600">Opsi Agunan</th>
-                <th className="px-2 py-1.5 text-left text-xs font-medium text-neutral-300 border-b border-neutral-600">Jenis Agunan</th>
-                <th className="px-2 py-1.5 text-left text-xs font-medium text-neutral-300 border-b border-neutral-600">Status</th>
-                <th className="px-2 py-1.5 text-left text-xs font-medium text-neutral-300 border-b border-neutral-600">Aksi</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Tanggal</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">No_Anggota</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Jenis</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Nominal</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Tenor</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Bunga</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Opsi Agunan</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Jenis Agunan</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Status</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {pinjaman.length === 0 ? <tr><td colSpan={10} className="px-2 py-3 text-center text-xs text-neutral-400">Belum ada data pinjaman</td></tr> : pinjaman.map(item => (
-                <tr key={item.id} className="border-t border-neutral-700">
-                  <td className="px-2 py-1.5 text-xs text-neutral-100 border-b border-neutral-600">{item.Tanggal}</td>
-                  <td className="px-2 py-1.5 text-xs text-neutral-100 border-b border-neutral-600">{item.No_Anggota}</td>
-                  <td className="px-2 py-1.5 text-xs text-neutral-100 border-b border-neutral-600">{item.Jenis_Pinjaman}</td>
-                  <td className="px-2 py-1.5 text-xs text-neutral-100 border-b border-neutral-600">Rp {formatRupiah(item.Nominal_Pinjaman)}</td>
-                  <td className="px-2 py-1.5 text-xs text-neutral-100 border-b border-neutral-600">{item.Tenor} bln</td>
-                  <td className="px-2 py-1.5 text-xs text-neutral-100 border-b border-neutral-600">{item.Bunga}%</td>
-                  <td className="px-2 py-1.5 text-xs text-neutral-100 border-b border-neutral-600">{item.opsi_agunan}</td>
-                  <td className="px-2 py-1.5 text-xs text-neutral-100 border-b border-neutral-600">{item.jenis_agunan}</td>
-                  <td className="px-2 py-1.5 text-xs text-neutral-100 border-b border-neutral-600">{item.Status}</td>
-                  <td className="px-2 py-1.5 text-xs text-neutral-100 border-b border-neutral-600">
-                    <button onClick={() => handleDelete(item.id)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-0.5 px-1.5 rounded text-[11px]">Hapus</button>
+              {pinjaman.length === 0 ? (
+                <tr><td colSpan={10} className="px-3 py-4 text-center text-xs text-zinc-500">Belum ada data pinjaman</td></tr>
+              ) : pinjaman.map(item => (
+                <tr key={item.id} className="border-t border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                  <td className="px-3 py-2 text-xs text-zinc-300">{item.Tanggal}</td>
+                  <td className="px-3 py-2 text-xs text-zinc-300">{item.No_Anggota}</td>
+                  <td className="px-3 py-2 text-xs text-zinc-300">{item.Jenis_Pinjaman}</td>
+                  <td className="px-3 py-2 text-xs text-zinc-300">Rp {formatRupiah(item.Nominal_Pinjaman)}</td>
+                  <td className="px-3 py-2 text-xs text-zinc-300">{item.Tenor} bln</td>
+                  <td className="px-3 py-2 text-xs text-zinc-300">{item.Bunga}%</td>
+                  <td className="px-3 py-2 text-xs text-zinc-300">{item.opsi_agunan}</td>
+                  <td className="px-3 py-2 text-xs text-zinc-300">{item.jenis_agunan}</td>
+                  <td className="px-3 py-2 text-xs">
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${item.Status === 'Aktif' ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'}`}>{item.Status}</span>
+                  </td>
+                  <td className="px-3 py-2 text-xs">
+                    <button onClick={() => handleDelete(item.id)} className="text-red-400 hover:text-red-300 transition-colors font-medium">Hapus</button>
                   </td>
                 </tr>
               ))}
