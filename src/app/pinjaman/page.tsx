@@ -461,40 +461,70 @@ export default function PinjamanPage() {
       </div>
 
       <div className="shrink-0 bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+        <div className="px-3 py-2.5 bg-zinc-800/40 border-b border-zinc-700/60 flex items-center justify-between">
+          <h3 className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Data Pinjaman Aktif</h3>
+          <span className="text-[10px] text-zinc-500 font-mono">{pinjaman.length} record</span>
+        </div>
         <div className="max-h-[150px] overflow-y-auto">
           <table className="min-w-full">
-            <thead className="bg-zinc-800/50 sticky top-0">
+            <thead className="bg-zinc-800/30 sticky top-0">
               <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Tanggal</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">No_Anggota</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Jenis</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Nominal</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Tenor</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Bunga</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Opsi Agunan</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Jenis Agunan</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Status</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-400 border-b border-zinc-700">Aksi</th>
+                <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider border-b border-zinc-700/80 border-r border-r-zinc-700/40 bg-zinc-800/50 w-[100px]">Tanggal</th>
+                <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-zinc-500 uppercase tracking-wider border-b border-zinc-700/80 border-r border-r-zinc-700/40 bg-zinc-800/50 w-[90px]">No. Anggota</th>
+                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-blue-400/80 uppercase tracking-wider border-b border-zinc-700/80 border-r border-r-zinc-700/40 bg-blue-500/5 w-[90px]">Jenis</th>
+                <th className="px-3 py-2.5 text-right text-[10px] font-semibold text-emerald-400/80 uppercase tracking-wider border-b border-zinc-700/80 border-r border-r-zinc-700/40 bg-emerald-500/5">Nominal</th>
+                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-zinc-500 uppercase tracking-wider border-b border-zinc-700/80 border-r border-r-zinc-700/40 bg-zinc-800/50 w-[70px]">Tenor</th>
+                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-zinc-500 uppercase tracking-wider border-b border-zinc-700/80 border-r border-r-zinc-700/40 bg-zinc-800/50 w-[70px]">Bunga</th>
+                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-amber-400/80 uppercase tracking-wider border-b border-zinc-700/80 border-r border-r-zinc-700/40 bg-amber-500/5 w-[130px]">Opsi Agunan</th>
+                <th className="px-3 py-2.5 text-left text-[10px] font-semibold text-amber-400/80 uppercase tracking-wider border-b border-zinc-700/80 border-r border-r-zinc-700/40 bg-amber-500/5">Jenis Agunan</th>
+                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-purple-400/80 uppercase tracking-wider border-b border-zinc-700/80 bg-purple-500/5 w-[85px]">Status</th>
+                <th className="px-3 py-2.5 text-center text-[10px] font-semibold text-red-400/80 uppercase tracking-wider border-b border-zinc-700/80 bg-red-500/5 w-[75px]">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {pinjaman.length === 0 ? (
-                <tr><td colSpan={10} className="px-3 py-4 text-center text-xs text-zinc-500">Belum ada data pinjaman</td></tr>
-              ) : pinjaman.map(item => (
-                <tr key={item.id} className="border-t border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
-                  <td className="px-3 py-2 text-xs text-zinc-300">{item.Tanggal}</td>
-                  <td className="px-3 py-2 text-xs text-zinc-300">{item.No_Anggota}</td>
-                  <td className="px-3 py-2 text-xs text-zinc-300">{item.Jenis_Pinjaman}</td>
-                  <td className="px-3 py-2 text-xs text-zinc-300">Rp {formatRupiah(item.Nominal_Pinjaman)}</td>
-                  <td className="px-3 py-2 text-xs text-zinc-300">{item.Tenor} bln</td>
-                  <td className="px-3 py-2 text-xs text-zinc-300">{item.Bunga}%</td>
-                  <td className="px-3 py-2 text-xs text-zinc-300">{item.opsi_agunan}</td>
-                  <td className="px-3 py-2 text-xs text-zinc-300">{item.jenis_agunan}</td>
-                  <td className="px-3 py-2 text-xs">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${item.Status === 'Aktif' ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'}`}>{item.Status}</span>
+                <tr>
+                  <td colSpan={10} className="px-3 py-6 text-center text-xs text-zinc-500">
+                    <div className="flex flex-col items-center gap-1">
+                      <svg className="w-6 h-6 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span>Belum ada data pinjaman</span>
+                    </div>
                   </td>
-                  <td className="px-3 py-2 text-xs">
-                    <button onClick={() => handleDelete(item.id)} className="text-red-400 hover:text-red-300 transition-colors font-medium">Hapus</button>
+                </tr>
+              ) : pinjaman.map(item => (
+                <tr key={item.id} className="border-t border-zinc-800/50 hover:bg-zinc-800/40 transition-colors group">
+                  <td className="px-3 py-2.5 text-xs text-zinc-400 font-mono">{item.Tanggal}</td>
+                  <td className="px-3 py-2.5 text-xs text-zinc-300 font-medium">{item.No_Anggota}</td>
+                  <td className="px-3 py-2.5 text-xs text-center">
+                    <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] font-semibold ${item.Jenis_Pinjaman === 'Flat' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-violet-500/10 text-violet-400 border border-violet-500/20'}`}>
+                      {item.Jenis_Pinjaman}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2.5 text-xs text-right text-white font-semibold tabular-nums">
+                    Rp {formatRupiah(item.Nominal_Pinjaman)}
+                  </td>
+                  <td className="px-3 py-2.5 text-xs text-center text-zinc-300 tabular-nums">{item.Tenor} bln</td>
+                  <td className="px-3 py-2.5 text-xs text-center text-zinc-300 tabular-nums">{item.Bunga}%</td>
+                  <td className="px-3 py-2.5 text-xs text-center text-zinc-400">
+                    <span className="truncate block max-w-[120px]" title={item.opsi_agunan}>{item.opsi_agunan}</span>
+                  </td>
+                  <td className="px-3 py-2.5 text-xs text-zinc-400">
+                    <span className="truncate block max-w-[150px]" title={item.jenis_agunan}>{item.jenis_agunan || '-'}</span>
+                  </td>
+                  <td className="px-3 py-2.5 text-xs text-center">
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold ${item.Status === 'Aktif' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+                      {item.Status}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2.5 text-xs text-center">
+                    <button 
+                      onClick={() => handleDelete(item.id)} 
+                      className="text-red-400/70 hover:text-red-400 hover:bg-red-500/10 transition-all font-medium px-2 py-1 rounded"
+                    >
+                      Hapus
+                    </button>
                   </td>
                 </tr>
               ))}
