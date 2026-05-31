@@ -77,6 +77,7 @@ export default function PinjamanPage() {
     jenis_agunan: '',
     detail_agunan: '',
     swkOption: '1%',
+    hargaPasarAgunan: 0,
   });
 
   const [useBulan, setUseBulan] = useState(false);
@@ -110,6 +111,14 @@ export default function PinjamanPage() {
   const bersih = nilaiMurni - totalPot;
 
   const swkPct = Math.round((nilaiMurni * 1) / 100);
+
+  const isAgunanFisik = ['SHM', 'Akta Tanah', 'Surat 3 Serangkai', 'BPKB Roda 2', 'BPKB Roda 4', 'BPKB Roda 6/8'].includes(formData.jenis_agunan);
+  const isSimpanan = formData.jenis_agunan === 'Simpanan (Semua jenis simpanan)';
+  const isPendiri = formData.jenis_agunan === 'Pendiri';
+  const showHargaPasar = isAgunanFisik || isSimpanan;
+  const batasMaksimal = isAgunanFisik ? Math.round((formData.hargaPasarAgunan || 0) * (['SHM', 'Akta Tanah', 'Surat 3 Serangkai'].includes(formData.jenis_agunan) ? 0.8 : 0.7)) : 0;
+  const melebihiBatas = nilaiMurni > batasMaksimal && batasMaksimal > 0;
+  const showInsentifPJP = melebihiBatas || isPendiri;
   const swk = formData.swkOption === '1%' ? Math.max(swkPct, 25000) : 25000;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -120,7 +129,7 @@ export default function PinjamanPage() {
       setFormData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
     } else if (name === 'Tenor' || name === 'bpjstkBulan') {
       setFormData(prev => ({ ...prev, [name]: parseInt(value) || 0 }));
-    } else if (name === 'Nominal_Pinjaman') {
+    } else if (name === 'Nominal_Pinjaman' || name === 'hargaPasarAgunan') {
       const raw = value.replace(/\./g, '');
       setFormData(prev => ({ ...prev, [name]: parseInt(raw) || 0 }));
     } else {
@@ -136,6 +145,10 @@ export default function PinjamanPage() {
     }
     if (!isMusiman && formData.Bunga <= 0) {
       alert('Bunga harus diisi untuk Pinjaman Flat');
+      return;
+    }
+    if (isSimpanan && nilaiMurni > batasMaksimal * 3) {
+      alert('OTOMATIS DIBLOKIR: Nominal pinjaman melebihi batas maksimal 3x lipat dari saldo simpanan anggota!');
       return;
     }
     const newPinjaman: Pinjaman = {
@@ -176,6 +189,7 @@ export default function PinjamanPage() {
       jenis_agunan: '',
       detail_agunan: '',
       swkOption: '1%',
+      hargaPasarAgunan: 0,
     });
     setUseBulan(false);
   };
@@ -313,6 +327,12 @@ export default function PinjamanPage() {
                     <span>Jumlah Pinjaman Nominal</span>
                     <span className="font-semibold text-white">Rp {formatRupiah(nilaiMurni)}</span>
                   </div>
+                  {(batasMaksimal > 0 || isSimpanan) && (
+                    <div className="flex justify-between text-zinc-500 text-[10px]">
+                      <span>Batas Maksimal Pinjaman</span>
+                      <span>Rp {isSimpanan ? formatRupiah(batasMaksimal * 3) : formatRupiah(batasMaksimal)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-red-400/80">
                     <span>Pot. Administrasi (2%)</span>
                     <span>Rp {formatRupiah(admin)}</span>
@@ -335,6 +355,11 @@ export default function PinjamanPage() {
                     <div className="flex justify-between text-red-400/80">
                       <span>Pot. Insentif PJP (1%)</span>
                       <span>Rp {formatRupiah(insentifPJP)}</span>
+                    </div>
+                  )}
+                  {melebihiBatas && !isSimpanan && (
+                    <div className="text-amber-400 text-[10px] font-medium">
+                      Peringatan: Nilai agunan tidak mengcover nominal pinjaman!
                     </div>
                   )}
                   <div className="flex justify-between text-red-400/80">
@@ -388,7 +413,7 @@ export default function PinjamanPage() {
           </div>
 
           {/* Tombol Simpan */}
-          <button type="submit" className="shrink-0 w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors text-sm">
+          <button type="submit" disabled={isSimpanan && nilaiMurni > batasMaksimal * 3} className="shrink-0 w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
             Simpan Pinjaman
           </button>
         </div>
