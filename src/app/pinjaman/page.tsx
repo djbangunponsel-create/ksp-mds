@@ -25,7 +25,6 @@ interface Pinjaman {
   potongan_danaSosial: number;
   potongan_danaRisiko: number;
   potongan_insentifPJ: number;
-  potongan_materai: number;
   potongan_legalNotaris: number;
   potongan_bpjstk: number;
   jumlah_potongan: number;
@@ -73,7 +72,6 @@ export default function PinjamanPage() {
     notaris: '',
     bpjstk: '',
     bpjstkBulan: 0,
-    materai: '',
     opsi_agunan: '',
     jenis_agunan: '',
     detail_agunan: '',
@@ -96,7 +94,7 @@ export default function PinjamanPage() {
   const risiko = (nilaiMurni * 1) / 100;
   const insentif = formData.tanpaAgunan ? (nilaiMurni * 1) / 100 : 0;
 
-  let materaiJumlah = formData.materai === 'Ya' ? 2 : 1;
+  const materaiJumlah = formData.notaris === "Ya" ? 2 : 1;
   const potMaterai = materaiJumlah * 12000;
 
   const potNotaris = formData.notaris === 'Ya' ? 400000 : 0;
@@ -151,7 +149,6 @@ export default function PinjamanPage() {
       potongan_danaSosial: sosial,
       potongan_danaRisiko: risiko,
       potongan_insentifPJ: insentif,
-      potongan_materai: potMaterai,
       potongan_legalNotaris: potNotaris,
       potongan_bpjstk: potBpjstk,
       jumlah_potongan: totalPot,
@@ -171,7 +168,6 @@ export default function PinjamanPage() {
       notaris: '',
       bpjstk: '',
       bpjstkBulan: 0,
-      materai: '',
       opsi_agunan: '',
       jenis_agunan: '',
       detail_agunan: '',
@@ -278,10 +274,7 @@ export default function PinjamanPage() {
           )}
           <div>
             <label className="block text-xs font-medium mb-0.5">Potongan Materai</label>
-            <select name="materai" value={formData.materai} onChange={handleChange} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm">
-              <option value="">Tidak (1 lembar)</option>
-              <option value="Ya">Ya (2 lembar)</option>
-            </select>
+            <input type="text" readOnly value={`${materaiJumlah} lembar (Rp ${formatRupiah(potMaterai)})`} className="w-full px-2 py-1.5 bg-neutral-600 text-neutral-300 rounded border border-neutral-600 text-sm" />
           </div>
           <div>
             <label className="block text-xs font-medium mb-0.5">Opsi SWK</label>
