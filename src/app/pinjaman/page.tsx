@@ -95,9 +95,40 @@ export default function PinjamanPage() {
   const sosial = Math.round(nilaiMurni * 0.01);
   const risiko = Math.round(nilaiMurni * 0.01);
   const insentif = formData.tanpaAgunan ? Math.round(nilaiMurni * 0.01) : 0;
-  const insentifPJP = (formData.jenis_agunan === 'Pendiri' || formData.jenis_agunan === 'Simpanan (Semua jenis simpanan)') ? Math.round(nilaiMurni * 0.01) : 0;
 
-  const materaiJumlah = formData.notaris === 'Ya' ? 2 : 1;
+  const isAgunanFisik = ['SHM', 'Akta Tanah', 'Surat 3 Serangkai', 'BPKB Roda 2', 'BPKB Roda 4', 'BPKB Roda 6/8'].includes(formData.jenis_agunan);
+  const isSimpanan = formData.jenis_agunan === 'Simpanan (Semua jenis simpanan)';
+  const isPendiri = formData.jenis_agunan === 'Pendiri';
+  const nonFisik = isPendiri || isSimpanan;
+  const showHargaPasar = isAgunanFisik || isSimpanan;
+
+  let batasMaksimal = 0;
+  if (isAgunanFisik) {
+    const pct = ['SHM', 'Akta Tanah', 'Surat 3 Serangkai'].includes(formData.jenis_agunan) ? 0.8 : 0.7;
+    batasMaksimal = Math.round((formData.hargaPasarAgunan || 0) * pct);
+  } else if (isSimpanan) {
+    let totalSaldo = 0;
+    if (typeof window !== 'undefined') {
+      try {
+        const members = JSON.parse(localStorage.getItem('members') || '[]');
+        const anggota = members.find((m: any) => m.No_Anggota === formData.No_Anggota);
+        if (anggota) {
+          const keys = ['SWK', 'SKS', 'Sibuhar', 'Simpan', 'Sihat', 'Sihar', 'Sisujang'];
+          for (const k of keys) {
+            const v = parseFloat((anggota[k] || 0).toLocaleString('id-ID').replace(/\./g, '')) || 0;
+            totalSaldo += v;
+          }
+        }
+      } catch {}
+    }
+    batasMaksimal = Math.round(totalSaldo * 3);
+  }
+
+  const melebihiBatas = nilaiMurni > batasMaksimal && batasMaksimal > 0;
+  const needPJP = melebihiBatas || isPendiri;
+  const insentifPJP = needPJP ? Math.round(nilaiMurni * 0.01) : 0;
+
+  const materaiJumlah = nonFisik ? 1 : (formData.notaris === 'Ya' ? 2 : 1);
   const potMaterai = materaiJumlah * 12000;
 
   const potNotaris = formData.notaris === 'Ya' ? 400000 : 0;
@@ -107,19 +138,11 @@ export default function PinjamanPage() {
     potBpjstk = formData.bpjstkBulan * 20000;
   }
 
+  const swkPct = Math.round((nilaiMurni * 1) / 100);
+  const swk = formData.swkOption === '1%' ? Math.max(swkPct, 25000) : 25000;
+
   const totalPot = admin + sosial + risiko + insentif + insentifPJP + potMaterai + potNotaris + potBpjstk;
   const bersih = nilaiMurni - totalPot;
-
-  const swkPct = Math.round((nilaiMurni * 1) / 100);
-
-  const isAgunanFisik = ['SHM', 'Akta Tanah', 'Surat 3 Serangkai', 'BPKB Roda 2', 'BPKB Roda 4', 'BPKB Roda 6/8'].includes(formData.jenis_agunan);
-  const isSimpanan = formData.jenis_agunan === 'Simpanan (Semua jenis simpanan)';
-  const isPendiri = formData.jenis_agunan === 'Pendiri';
-  const showHargaPasar = isAgunanFisik || isSimpanan;
-  const batasMaksimal = isAgunanFisik ? Math.round((formData.hargaPasarAgunan || 0) * (['SHM', 'Akta Tanah', 'Surat 3 Serangkai'].includes(formData.jenis_agunan) ? 0.8 : 0.7)) : 0;
-  const melebihiBatas = nilaiMurni > batasMaksimal && batasMaksimal > 0;
-  const showInsentifPJP = melebihiBatas || isPendiri;
-  const swk = formData.swkOption === '1%' ? Math.max(swkPct, 25000) : 25000;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;
@@ -147,8 +170,8 @@ export default function PinjamanPage() {
       alert('Bunga harus diisi untuk Pinjaman Flat');
       return;
     }
-    if (isSimpanan && nilaiMurni > batasMaksimal * 3) {
-      alert('OTOMATIS DIBLOKIR: Nominal pinjaman melebihi batas maksimal 3x lipat dari saldo simpanan anggota!');
+    if (isSimpanan && nilaiMurni > batasMaksimal) {
+      alert('OTOMATIS DIBLOKIR: Nominal pinjaman melebihi batas maksimal 3x lipat dari saldo simpanan!');
       return;
     }
     const newPinjaman: Pinjaman = {
@@ -208,7 +231,6 @@ export default function PinjamanPage() {
       </header>
 
       <div className="flex-1 min-h-0 flex gap-3">
-        {/* KOLOM KIRI - Form Input */}
         <div className="w-[60%] shrink-0">
           <form onSubmit={handleSubmit} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 h-full flex flex-col">
             <h2 className="text-sm font-semibold text-zinc-200 mb-3">Form Pinjaman</h2>
@@ -271,6 +293,13 @@ export default function PinjamanPage() {
                   </div>
                 </>
               )}
+              {showHargaPasar && (
+                <div>
+                  <label className="block text-xs font-medium text-zinc-400 mb-1">Harga Pasar Agunan</label>
+                  <input type="text" name="hargaPasarAgunan" value={formData.hargaPasarAgunan ? formatRupiah(formData.hargaPasarAgunan) : ''} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="Contoh: 50.000.000" />
+                </div>
+              )}
+              {!showHargaPasar && <div></div>}
               <div>
                 <label className="block text-xs font-medium text-zinc-400 mb-1">Legalisasi Notaris</label>
                 <select name="notaris" value={formData.notaris} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50">
@@ -296,7 +325,7 @@ export default function PinjamanPage() {
               )}
               <div>
                 <label className="block text-xs font-medium text-zinc-400 mb-1">Potongan Materai</label>
-                <input type="text" readOnly value={`${materaiJumlah} lembar (Rp ${formatRupiah(potMaterai)})`} className="w-full py-2 px-3 bg-zinc-700 text-zinc-300 border border-zinc-600 rounded-lg text-sm cursor-not-allowed" />
+                <input type="text" readOnly value={`${materaiJumlah} lembar`} className="w-full py-2 px-3 bg-zinc-700 text-zinc-300 border border-zinc-600 rounded-lg text-sm cursor-not-allowed" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-zinc-400 mb-1">Opsi SWK</label>
@@ -311,14 +340,29 @@ export default function PinjamanPage() {
                   <span className="text-xs text-zinc-300">Tanpa Agunan / Nilai Jual Agunan Kurang (potong 1%)</span>
                 </label>
               </div>
+              {needPJP && (
+                <div className="col-span-2 bg-zinc-800/50 border border-amber-500/30 rounded-lg p-2.5">
+                  <label className="block text-xs font-medium text-amber-400 mb-1">Insentif Penanggung Jawab Pinjaman (Insentif PJP) - 1%</label>
+                  <div className="text-xs text-zinc-300">Nilai Insentif PJP: <span className="font-bold text-amber-400">Rp {formatRupiah(insentifPJP)}</span></div>
+                  <p className="text-[10px] text-zinc-500 mt-0.5">Dikenakan otomatis karena agunan tidak cover atau jenis agunan Pendiri/Simpanan.</p>
+                </div>
+              )}
+              {melebihiBatas && !isSimpanan && (
+                <div className="col-span-2 bg-red-500/10 border border-red-500/30 rounded-lg p-2">
+                  <p className="text-xs text-red-400 font-medium">Peringatan: Nilai agunan tidak mengcover nominal pinjaman!</p>
+                </div>
+              )}
+              {isSimpanan && nilaiMurni > batasMaksimal && (
+                <div className="col-span-2 bg-red-500/10 border border-red-500/30 rounded-lg p-2">
+                  <p className="text-xs text-red-400 font-medium">OTOMATIS DIBLOKIR: Nominal pinjaman melebihi batas maksimal 3x lipat dari saldo simpanan anggota!</p>
+                </div>
+              )}
             </div>
           </form>
         </div>
 
-        {/* KOLOM KANAN - Estimasi & Aksi */}
         <div className="w-[40%] shrink-0 flex flex-col gap-3">
           <div className="flex-1 flex flex-col gap-3 min-h-0">
-            {/* Box Estimasi Potongan */}
             {formData.Nominal_Pinjaman > 0 && (
               <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex-1">
                 <h3 className="text-xs font-semibold text-zinc-300 mb-2 uppercase tracking-wider">Estimasi Potongan & Pencairan</h3>
@@ -330,7 +374,7 @@ export default function PinjamanPage() {
                   {(batasMaksimal > 0 || isSimpanan) && (
                     <div className="flex justify-between text-zinc-500 text-[10px]">
                       <span>Batas Maksimal Pinjaman</span>
-                      <span>Rp {isSimpanan ? formatRupiah(batasMaksimal * 3) : formatRupiah(batasMaksimal)}</span>
+                      <span>Rp {formatRupiah(batasMaksimal)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-red-400/80">
@@ -351,15 +395,10 @@ export default function PinjamanPage() {
                       <span>Rp {formatRupiah(insentif)}</span>
                     </div>
                   )}
-                  {(formData.jenis_agunan === 'Pendiri' || formData.jenis_agunan === 'Simpanan (Semua jenis simpanan)') && (
+                  {(formData.jenis_agunan === 'Pendiri' || formData.jenis_agunan === 'Simpanan (Semua jenis simpanan)' || melebihiBatas) && (
                     <div className="flex justify-between text-red-400/80">
                       <span>Pot. Insentif PJP (1%)</span>
                       <span>Rp {formatRupiah(insentifPJP)}</span>
-                    </div>
-                  )}
-                  {melebihiBatas && !isSimpanan && (
-                    <div className="text-amber-400 text-[10px] font-medium">
-                      Peringatan: Nilai agunan tidak mengcover nominal pinjaman!
                     </div>
                   )}
                   <div className="flex justify-between text-red-400/80">
@@ -386,7 +425,6 @@ export default function PinjamanPage() {
               </div>
             )}
 
-            {/* Box Estimasi Angsuran */}
             {formData.Nominal_Pinjaman > 0 && formData.Tenor > 0 && (
               <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex-1">
                 <h3 className="text-xs font-semibold text-zinc-300 mb-2 uppercase tracking-wider">Estimasi Angsuran per Bulan</h3>
@@ -412,16 +450,18 @@ export default function PinjamanPage() {
             )}
           </div>
 
-          {/* Tombol Simpan */}
-          <button type="submit" disabled={isSimpanan && nilaiMurni > batasMaksimal * 3} className="shrink-0 w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+          <button
+            type="submit"
+            disabled={isSimpanan && nilaiMurni > batasMaksimal}
+            className="shrink-0 w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors text-sm"
+          >
             Simpan Pinjaman
           </button>
         </div>
       </div>
 
-      {/* Tabel Data Pinjaman */}
       <div className="shrink-0 bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-        <div className="max-h-[160px] overflow-y-auto">
+        <div className="max-h-[150px] overflow-y-auto">
           <table className="min-w-full">
             <thead className="bg-zinc-800/50 sticky top-0">
               <tr>
