@@ -8,9 +8,17 @@ const formatRupiah = (value: string | number): string => {
   return parsed.toLocaleString('id-ID');
 };
 
+interface Anggota {
+  No_Anggota: string;
+  NAMA_ANGGOTA: string;
+  Tanggal_Masuk: string;
+  [key: string]: string;
+}
+
 interface Angsuran {
   id: string;
   No_Anggota: string;
+  Nama_Anggota: string;
   Angsuran_Pokok: number;
   Angsuran_Bunga: number;
   Tanggal: string;
@@ -28,8 +36,21 @@ export default function PinjamanAngsuranPage() {
     }
     return [];
   });
+  const [anggotaList, setAnggotaList] = useState<Anggota[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('members');
+        return saved ? JSON.parse(saved) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
   const [formData, setFormData] = useState({
     No_Anggota: '',
+    Nama_Anggota: '',
+    Tanggal_Masuk: '',
     Angsuran_Pokok: 0,
     Angsuran_Bunga: 0,
   });
@@ -42,13 +63,21 @@ export default function PinjamanAngsuranPage() {
     }
   }, [angsuran]);
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === 'Angsuran_Pokok' || name === 'Angsuran_Bunga') {
       const rawValue = value.replace(/\./g, '');
       setFormData(prev => ({
         ...prev,
         [name]: parseInt(rawValue) || 0
+      }));
+    } else if (name === 'No_Anggota') {
+      const selected = anggotaList.find(a => a.No_Anggota === value);
+      setFormData(prev => ({
+        ...prev,
+        No_Anggota: value,
+        Nama_Anggota: selected ? selected.NAMA_ANGGOTA : '',
+        Tanggal_Masuk: selected ? selected.Tanggal_Masuk : '',
       }));
     } else {
       setFormData(prev => ({
@@ -74,6 +103,8 @@ export default function PinjamanAngsuranPage() {
     setAngsuran(prev => [...prev, newAngsuran]);
     setFormData({
       No_Anggota: '',
+      Nama_Anggota: '',
+      Tanggal_Masuk: '',
       Angsuran_Pokok: 0,
       Angsuran_Bunga: 0,
     });
@@ -93,18 +124,34 @@ export default function PinjamanAngsuranPage() {
         <form onSubmit={handleSubmit} className="bg-neutral-800 p-6 rounded-lg mb-6 max-w-2xl">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">No_Anggota</label>
-              <input
-                type="text"
+              <label className="block text-sm font-medium mb-1">No. Anggota</label>
+              <select
                 name="No_Anggota"
                 value={formData.No_Anggota}
                 onChange={handleFormChange}
                 className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+              >
+                <option value="">Pilih Anggota</option>
+                {anggotaList.map(a => (
+                  <option key={a.No_Anggota} value={a.No_Anggota}>
+                    {a.No_Anggota} - {a.NAMA_ANGGOTA}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Nama Lengkap</label>
+              <input
+                type="text"
+                name="Nama_Anggota"
+                value={formData.Nama_Anggota}
+                readOnly
+                className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Angsuran_Pokok</label>
+              <label className="block text-sm font-medium mb-1">Angsuran Pokok</label>
               <input
                 type="text"
                 name="Angsuran_Pokok"
@@ -116,7 +163,7 @@ export default function PinjamanAngsuranPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Angsuran_Bunga</label>
+              <label className="block text-sm font-medium mb-1">Angsuran Bunga</label>
               <input
                 type="text"
                 name="Angsuran_Bunga"
@@ -125,6 +172,16 @@ export default function PinjamanAngsuranPage() {
                 className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Contoh: 50.000"
                 required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Tanggal Masuk</label>
+              <input
+                type="text"
+                name="Tanggal_Masuk"
+                value={formData.Tanggal_Masuk}
+                readOnly
+                className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div className="flex items-end">
@@ -147,9 +204,10 @@ export default function PinjamanAngsuranPage() {
           <thead>
             <tr className="bg-neutral-700">
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Tanggal</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">No_Anggota</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Angsuran_Pokok</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Angsuran_Bunga</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">No. Anggota</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Nama Anggota</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Angsuran Pokok</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Angsuran Bunga</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Total</th>
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">Aksi</th>
             </tr>
@@ -157,13 +215,14 @@ export default function PinjamanAngsuranPage() {
           <tbody>
             {angsuran.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-4 text-center text-neutral-400">Belum ada data angsuran</td>
+                <td colSpan={7} className="px-4 py-4 text-center text-neutral-400">Belum ada data angsuran</td>
               </tr>
             ) : (
               angsuran.map((item) => (
                 <tr key={item.id} className="border-t border-neutral-700">
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Tanggal}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.No_Anggota}</td>
+                  <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">{item.Nama_Anggota}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {formatRupiah(item.Angsuran_Pokok)}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {formatRupiah(item.Angsuran_Bunga)}</td>
                   <td className="px-4 py-3 text-sm text-neutral-100 border-b border-neutral-600">Rp {formatRupiah(item.Angsuran_Pokok + item.Angsuran_Bunga)}</td>

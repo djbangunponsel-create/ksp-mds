@@ -6,6 +6,7 @@ import { Printer } from 'lucide-react';
 interface Anggota {
   No_Anggota: string;
   NAMA_ANGGOTA: string;
+  Tanggal_Masuk: string;
   [key: string]: string;
 }
 
@@ -119,6 +120,8 @@ export default function TransaksiSimpananPage() {
   });
   const [formData, setFormData] = useState({
     No_Anggota: '',
+    Nama_Anggota: '',
+    Tanggal_Masuk: '',
     Jenis_Simpanan: 'SP',
     Nominal: 0,
     Tenor: 0,
@@ -156,8 +159,19 @@ export default function TransaksiSimpananPage() {
       setFormData(prev => ({ ...prev, [name]: numericValue }));
     } else if (name === 'Tenor') {
       setFormData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
+    } else if (name === 'No_Anggota') {
+      const selected = anggota.find(a => a.No_Anggota === value);
+      setFormData(prev => ({
+        ...prev,
+        No_Anggota: value,
+        Nama_Anggota: selected ? selected.NAMA_ANGGOTA : '',
+        Tanggal_Masuk: selected ? selected.Tanggal_Masuk || '' : '',
+      }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
     }
   };
 
@@ -248,6 +262,8 @@ export default function TransaksiSimpananPage() {
     setTransaksi(prev => [...prev, newTransaksi]);
     setFormData({
       No_Anggota: '',
+      Nama_Anggota: '',
+      Tanggal_Masuk: '',
       Jenis_Simpanan: 'SP',
       Nominal: 0,
       Tenor: 0,
@@ -309,23 +325,32 @@ export default function TransaksiSimpananPage() {
                 required
               />
             </div>
-            {isSisujang && (
-              <div>
-                <label className="block text-sm font-medium mb-1">Tenor (Bulan)</label>
-                <select
-                  name="Tenor"
-                  value={formData.Tenor}
-                  onChange={handleFormChange}
-                  className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  <option value={0}>Pilih Tenor</option>
-                  {tenorOptions.map(t => (
-                    <option key={t} value={t}>{t} Bulan</option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <div>
+              {isSisujang ? (
+                <>
+                  <label className="block text-sm font-medium mb-1">Tenor (Bulan)</label>
+                  <select
+                    name="Tenor"
+                    value={formData.Tenor}
+                    onChange={handleFormChange}
+                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value={0}>Pilih Tenor</option>
+                    {tenorOptions.map(t => (
+                      <option key={t} value={t}>{t} Bulan</option>
+                    ))}
+                  </select>
+                </>
+              ) : (
+                <input
+                  type="text"
+                  value="-"
+                  readOnly
+                  className="w-full px-3 py-2 bg-neutral-700 text-neutral-300 rounded border border-neutral-600 focus:outline-none"
+                />
+              )}
+            </div>
             <div>
               <label className="block text-sm font-medium mb-1">Bunga Terkunci (% p.a)</label>
               <input

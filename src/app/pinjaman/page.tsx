@@ -84,6 +84,8 @@ export default function PinjamanPage() {
   });
   const [formData, setFormData] = useState({
     No_Anggota: '' as string,
+    Nama_Anggota: '' as string,
+    Tanggal_Masuk: '' as string,
     Jenis_Pinjaman: 'Flat' as 'Flat' | 'Musiman',
     Nominal_Pinjaman: 0,
     Tenor: 0,
@@ -196,6 +198,14 @@ export default function PinjamanPage() {
     } else if (name === 'Nominal_Pinjaman' || name === 'hargaPasarAgunan' || name === 'harga_likuidasi') {
       const raw = value.replace(/\./g, '');
       setFormData(prev => ({ ...prev, [name]: parseInt(raw) || 0 }));
+    } else if (name === 'No_Anggota') {
+      const selected = anggota.find(a => a.No_Anggota === value);
+      setFormData(prev => ({
+        ...prev,
+        No_Anggota: value,
+        Nama_Anggota: selected ? selected.NAMA_ANGGOTA : '',
+        Tanggal_Masuk: selected ? selected.Tanggal_Masuk || '' : '',
+      }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -259,6 +269,8 @@ export default function PinjamanPage() {
     setPinjaman(prev => [...prev, newPinjaman]);
     setFormData({
       No_Anggota: '',
+      Nama_Anggota: '',
+      Tanggal_Masuk: '',
       Jenis_Pinjaman: 'Flat',
       Nominal_Pinjaman: 0,
       Tenor: 0,
@@ -362,8 +374,20 @@ export default function PinjamanPage() {
                     <select name="jenis_agunan" value={formData.jenis_agunan} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50">
                       <option value="">Pilih Jenis</option>
                       {jenisAgunanOptions.map(j => <option key={j} value={j}>{j}</option>)}
-                    </select>
+                </select>
+              </div>
+              <div className="col-span-2">
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-400 mb-1">Nama Lengkap</label>
+                    <input type="text" value={formData.Nama_Anggota} readOnly className="w-full py-2 px-3 bg-zinc-800 text-zinc-300 border border-zinc-700 rounded-lg text-sm" />
                   </div>
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-400 mb-1">Tanggal Masuk</label>
+                    <input type="text" value={formData.Tanggal_Masuk} readOnly className="w-full py-2 px-3 bg-zinc-800 text-zinc-300 border border-zinc-700 rounded-lg text-sm" />
+                  </div>
+                </div>
+              </div>
                   <div>
                     <label className="block text-xs font-medium text-zinc-400 mb-1">Detail / No. Agunan</label>
                     <input type="text" name="detail_agunan" value={formData.detail_agunan} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="Nomor/Keterangan" />
