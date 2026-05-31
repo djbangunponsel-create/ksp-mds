@@ -73,6 +73,28 @@ export default function AnggotaPage() {
     'PENGHASILAN_per_Bulan',
   ];
 
+  const columnLabels: Record<string, string> = {
+    No_Anggota: 'No. Anggota',
+    NAMA_ANGGOTA: 'Nama Anggota',
+    Jenis_Kelamin: 'Jenis Kelamin',
+    Agama: 'Agama',
+    NIK: 'NIK',
+    Tempat_Lahir: 'Tempat Lahir',
+    Tanggal_Lahir: 'Tanggal Lahir',
+    TELEPON: 'No. Telepon',
+    Alamat: 'Alamat',
+    Tanggal_Masuk: 'Tanggal Masuk',
+    Status_Perkawinan: 'Status Perkawinan',
+    Nama_Pasangan: 'Nama Pasangan',
+    Jumlah_Anak: 'Jumlah Anak',
+    Nama_Ibu_Kandung: 'Nama Ibu Kandung',
+    Nama_Saudara: 'Nama Saudara Kontrak / Darurat',
+    No_HP_Saudara: 'No. HP Saudara',
+    Hubungan_Saudara: 'Hubungan Saudara',
+    Pekerjaan: 'Pekerjaan',
+    PENGHASILAN_per_Bulan: 'Penghasilan per Bulan',
+  };
+
   const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -226,212 +248,202 @@ export default function AnggotaPage() {
       {/* Modal for manual add */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-neutral-800 rounded-lg p-6 w-96">
+          <div className="bg-neutral-800 rounded-lg p-6 w-full max-w-5xl">
             <h2 className="text-xl font-bold mb-4">Tambah Anggota Baru</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                {/* Column 1 */}
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="grid grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1">No_Anggota</label>
-                  <input
-                    type="text"
-                    name="No_Anggota"
-                    value={formData.No_Anggota}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">NAMA_ANGGOTA</label>
-                  <input
-                    type="text"
-                    name="NAMA_ANGGOTA"
-                    value={formData.NAMA_ANGGOTA}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Jenis_Kelamin</label>
-                  <input
-                    type="text"
-                    name="Jenis_Kelamin"
-                    value={formData.Jenis_Kelamin}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Agama</label>
-                  <input
-                    type="text"
-                    name="Agama"
-                    value={formData.Agama}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">NIK</label>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">NIK</label>
                   <input
                     type="text"
                     name="NIK"
                     value={formData.NIK}
                     onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    required
                   />
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {/* Column 2 */}
                 <div>
-                  <label className="block text-sm font-medium mb-1">Tempat_Lahir</label>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Jenis Kelamin</label>
+                  <input
+                    type="text"
+                    name="Jenis_Kelamin"
+                    value={formData.Jenis_Kelamin}
+                    onChange={handleFormChange}
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Agama</label>
+                  <input
+                    type="text"
+                    name="Agama"
+                    value={formData.Agama}
+                    onChange={handleFormChange}
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                </div>
+                <div></div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Tempat Lahir</label>
                   <input
                     type="text"
                     name="Tempat_Lahir"
                     value={formData.Tempat_Lahir}
                     onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Tanggal_Lahir</label>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Tanggal Lahir</label>
                   <input
                     type="date"
                     name="Tanggal_Lahir"
                     value={formData.Tanggal_Lahir}
                     onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">TELEPON</label>
-                  <input
-                    type="tel"
-                    name="TELEPON"
-                    value={formData.TELEPON}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Alamat</label>
-                  <input
-                    type="text"
-                    name="Alamat"
-                    value={formData.Alamat}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Tanggal_Masuk</label>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Tanggal Masuk</label>
                   <input
                     type="date"
                     name="Tanggal_Masuk"
                     value={formData.Tanggal_Masuk}
                     onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
+                <div></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                {/* Column 3 */}
+
+              <div className="grid grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Status_Perkawinan</label>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">No. Telepon</label>
+                  <input
+                    type="tel"
+                    name="TELEPON"
+                    value={formData.TELEPON}
+                    onChange={handleFormChange}
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Alamat</label>
+                  <input
+                    type="text"
+                    name="Alamat"
+                    value={formData.Alamat}
+                    onChange={handleFormChange}
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                </div>
+                <div></div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Status Perkawinan</label>
                   <input
                     type="text"
                     name="Status_Perkawinan"
                     value={formData.Status_Perkawinan}
                     onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Nama_Pasangan</label>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Nama Pasangan</label>
                   <input
                     type="text"
                     name="Nama_Pasangan"
                     value={formData.Nama_Pasangan}
                     onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Jumlah_Anak</label>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Jumlah Anak</label>
                   <input
                     type="number"
                     name="Jumlah_Anak"
                     value={formData.Jumlah_Anak}
                     onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
+                <div></div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Nama_Ibu_Kandung</label>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Nama Ibu Kandung</label>
                   <input
                     type="text"
                     name="Nama_Ibu_Kandung"
                     value={formData.Nama_Ibu_Kandung}
                     onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Nama_Saudara</label>
-                  <input
-                    type="text"
-                    name="Nama_Saudara"
-                    value={formData.Nama_Saudara}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {/* Column 4 */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">No_HP_Saudara</label>
-                  <input
-                    type="tel"
-                    name="No_HP_Saudara"
-                    value={formData.No_HP_Saudara}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Hubungan_Saudara</label>
-                  <input
-                    type="text"
-                    name="Hubungan_Saudara"
-                    value={formData.Hubungan_Saudara}
-                    onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Pekerjaan</label>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Pekerjaan</label>
                   <input
                     type="text"
                     name="Pekerjaan"
                     value={formData.Pekerjaan}
                     onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">PENGHASILAN_per_Bulan</label>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Penghasilan per Bulan</label>
                   <input
                     type="text"
                     name="PENGHASILAN_per_Bulan"
                     value={formData.PENGHASILAN_per_Bulan}
                     onChange={handleFormChange}
-                    className="w-full px-3 py-2 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
+                <div></div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Nama Saudara Kontrak / Darurat</label>
+                  <input
+                    type="text"
+                    name="Nama_Saudara"
+                    value={formData.Nama_Saudara}
+                    onChange={handleFormChange}
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">No. HP Saudara</label>
+                  <input
+                    type="tel"
+                    name="No_HP_Saudara"
+                    value={formData.No_HP_Saudara}
+                    onChange={handleFormChange}
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Hubungan Saudara</label>
+                  <input
+                    type="text"
+                    name="Hubungan_Saudara"
+                    value={formData.Hubungan_Saudara}
+                    onChange={handleFormChange}
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                </div>
+                <div></div>
               </div>
               <div className="flex justify-end gap-3">
                 <button
@@ -463,7 +475,7 @@ export default function AnggotaPage() {
                   key={col}
                   className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600"
                 >
-                  {col}
+                  {columnLabels[col] || col}
                 </th>
               ))}
               <th className="px-4 py-3 text-left text-sm font-medium text-neutral-300 border-b border-neutral-600">
