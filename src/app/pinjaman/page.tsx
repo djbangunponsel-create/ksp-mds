@@ -34,10 +34,17 @@ interface Pinjaman {
   opsi_agunan: string;
   jenis_agunan: string;
   detail_agunan: string;
-  agunan_no_surat: string;
-  agunan_nama_pemegang: string;
+  agunan_no_dokumen: string;
+  agunan_nama_pemilik: string;
+  agunan_luas_tanah: string;
+  agunan_luas_bangunan: string;
   agunan_lokasi: string;
-  agunan_luas: string;
+  agunan_no_bpkb: string;
+  agunan_identitas_kendaraan: string;
+  agunan_no_polisi: string;
+  agunan_no_rangka: string;
+  agunan_no_mesin: string;
+  agunan_total_saldo: number;
   agunan_tgl_terbit: string;
   agunan_berlaku_sampai: string;
   agunan_atas_nama: string;
@@ -71,7 +78,7 @@ export default function PinjamanPage() {
     return [];
   });
   const [formData, setFormData] = useState({
-    No_Anggota: '',
+    No_Anggota: '' as string,
     Jenis_Pinjaman: 'Flat' as 'Flat' | 'Musiman',
     Nominal_Pinjaman: 0,
     Tenor: 0,
@@ -83,10 +90,17 @@ export default function PinjamanPage() {
     opsi_agunan: '',
     jenis_agunan: '',
     detail_agunan: '',
-    agunan_no_surat: '',
-    agunan_nama_pemegang: '',
+    agunan_no_dokumen: '',
+    agunan_nama_pemilik: '',
+    agunan_luas_tanah: '',
+    agunan_luas_bangunan: '',
     agunan_lokasi: '',
-    agunan_luas: '',
+    agunan_no_bpkb: '',
+    agunan_identitas_kendaraan: '',
+    agunan_no_polisi: '',
+    agunan_no_rangka: '',
+    agunan_no_mesin: '',
+    agunan_total_saldo: 0,
     agunan_tgl_terbit: '',
     agunan_berlaku_sampai: '',
     agunan_atas_nama: '',
@@ -210,10 +224,17 @@ export default function PinjamanPage() {
       opsi_agunan: formData.opsi_agunan,
       jenis_agunan: formData.jenis_agunan,
       detail_agunan: formData.detail_agunan,
-      agunan_no_surat: formData.agunan_no_surat,
-      agunan_nama_pemegang: formData.agunan_nama_pemegang,
+      agunan_no_dokumen: formData.agunan_no_dokumen,
+      agunan_nama_pemilik: formData.agunan_nama_pemilik,
+      agunan_luas_tanah: formData.agunan_luas_tanah,
+      agunan_luas_bangunan: formData.agunan_luas_bangunan,
       agunan_lokasi: formData.agunan_lokasi,
-      agunan_luas: formData.agunan_luas,
+      agunan_no_bpkb: formData.agunan_no_bpkb,
+      agunan_identitas_kendaraan: formData.agunan_identitas_kendaraan,
+      agunan_no_polisi: formData.agunan_no_polisi,
+      agunan_no_rangka: formData.agunan_no_rangka,
+      agunan_no_mesin: formData.agunan_no_mesin,
+      agunan_total_saldo: formData.agunan_total_saldo,
       agunan_tgl_terbit: formData.agunan_tgl_terbit,
       agunan_berlaku_sampai: formData.agunan_berlaku_sampai,
       agunan_atas_nama: formData.agunan_atas_nama,
@@ -232,10 +253,17 @@ export default function PinjamanPage() {
       opsi_agunan: '',
       jenis_agunan: '',
       detail_agunan: '',
-      agunan_no_surat: '',
-      agunan_nama_pemegang: '',
+      agunan_no_dokumen: '',
+      agunan_nama_pemilik: '',
+      agunan_luas_tanah: '',
+      agunan_luas_bangunan: '',
       agunan_lokasi: '',
-      agunan_luas: '',
+      agunan_no_bpkb: '',
+      agunan_identitas_kendaraan: '',
+      agunan_no_polisi: '',
+      agunan_no_rangka: '',
+      agunan_no_mesin: '',
+      agunan_total_saldo: 0,
       agunan_tgl_terbit: '',
       agunan_berlaku_sampai: '',
       agunan_atas_nama: '',
@@ -319,41 +347,83 @@ export default function PinjamanPage() {
                     <label className="block text-xs font-medium text-zinc-400 mb-1">Detail / No. Agunan</label>
                     <input type="text" name="detail_agunan" value={formData.detail_agunan} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="Nomor/Keterangan" />
                   </div>
-                  {formData.jenis_agunan && (
+                  {formData.jenis_agunan === 'SHM' || formData.jenis_agunan === 'Akta Tanah' || formData.jenis_agunan === 'Surat 3 Serangkai' ? (
                     <div className="col-span-2 bg-zinc-800/40 border border-zinc-700/50 rounded-lg px-3 py-2">
-                      <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2.5">Detail Jaminan</p>
+                      <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2.5">Detail Jaminan - Tanah/Bangunan</p>
                       <div className="grid grid-cols-2 gap-2.5">
                         <div>
-                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">No. Surat / BPKB</label>
-                          <input type="text" name="agunan_no_surat" value={formData.agunan_no_surat} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="123/BPKB/2024" />
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Nomor Dokumen <span className="text-red-400/70">*</span></label>
+                          <input type="text" name="agunan_no_dokumen" value={formData.agunan_no_dokumen} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="No. SHM / Akta / Surat Kepemilikan" />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Nama Pemegang Jaminan</label>
-                          <input type="text" name="agunan_nama_pemegang" value={formData.agunan_nama_pemegang} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Nama sesuai dokumen" />
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Nama Pemilik <span className="text-red-400/70">*</span></label>
+                          <input type="text" name="agunan_nama_pemilik" value={formData.agunan_nama_pemilik} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Nama sesuai surat tanah" />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Atas Nama</label>
-                          <input type="text" name="agunan_atas_nama" value={formData.agunan_atas_nama} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Nama pemilik agunan" />
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Luas Tanah (m²)</label>
+                          <input type="text" name="agunan_luas_tanah" value={formData.agunan_luas_tanah} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Contoh: 120" />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Lokasi / Alamat Agunan</label>
-                          <input type="text" name="agunan_lokasi" value={formData.agunan_lokasi} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Alamat / Kelurahan" />
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Luas Bangunan (m²)</label>
+                          <input type="text" name="agunan_luas_bangunan" value={formData.agunan_luas_bangunan} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Contoh: 80" />
                         </div>
-                        <div>
-                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Luas</label>
-                          <input type="text" name="agunan_luas" value={formData.agunan_luas} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Contoh: 120 m2" />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Tanggal Terbit</label>
-                          <input type="date" name="agunan_tgl_terbit" value={formData.agunan_tgl_terbit} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30 [color-scheme:dark]" />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Berlaku Sampai</label>
-                          <input type="date" name="agunan_berlaku_sampai" value={formData.agunan_berlaku_sampai} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30 [color-scheme:dark]" />
+                        <div className="col-span-2">
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Lokasi / Alamat Lengkap</label>
+                          <input type="text" name="agunan_lokasi" value={formData.agunan_lokasi} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Alamat / Kelurahan / Kecamatan" />
                         </div>
                       </div>
                     </div>
-                  )}
+                  ) : (formData.jenis_agunan === 'BPKB Roda 2' || formData.jenis_agunan === 'BPKB Roda 4' || formData.jenis_agunan === 'BPKB Roda 6/8') ? (
+                    <div className="col-span-2 bg-zinc-800/40 border border-zinc-700/50 rounded-lg px-3 py-2">
+                      <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2.5">Detail Jaminan - BPKB Kendaraan</p>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Nomor BPKB <span className="text-red-400/70">*</span></label>
+                          <input type="text" name="agunan_no_bpkb" value={formData.agunan_no_bpkb} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Nomor seri BPKB" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Identitas Kendaraan <span className="text-red-400/70">*</span></label>
+                          <input type="text" name="agunan_identitas_kendaraan" value={formData.agunan_identitas_kendaraan} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Merek / Tipe / Warna / Tahun" />
+                        </div>
+                        <div>
+                          <label className="block text-[px] font-medium text-zinc-500 mb-1">No. Polisi</label>
+                          <input type="text" name="agunan_no_polisi" value={formData.agunan_no_polisi} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Contoh: DD 1234 AB" />
+                        </div>
+                        <div>
+                          <label className="block text-[px] font-medium text-zinc-500 mb-1">No. Rangka</label>
+                          <input type="text" name="agunan_no_rangka" value={formData.agunan_no_rangka} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Nomor rangka kendaraan" />
+                        </div>
+                        <div>
+                          <label className="block text-[px] font-medium text-zinc-500 mb-1">No. Mesin</label>
+                          <input type="text" name="agunan_no_mesin" value={formData.agunan_no_mesin} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Nomor mesin kendaraan" />
+                        </div>
+                        <div>
+                          <label className="block text-[px] font-medium text-zinc-500 mb-1">Nama Pemegang BPKB</label>
+                          <input type="text" name="agunan_nama_pemilik" value={formData.agunan_nama_pemilik} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Nama tertera di BPKB" />
+                        </div>
+                      </div>
+                    </div>
+                  ) : formData.jenis_agunan === 'Simpanan (Semua jenis simpanan)' ? (
+                    <div className="col-span-2 bg-emerald-500/5 border border-emerald-500/20 rounded-lg px-3 py-2">
+                      <p className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider mb-2">Detail Jaminan - Simpanan Terikat</p>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <div className="col-span-1">
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Nomor Anggota</label>
+                          <input type="text" value={formData.No_Anggota} readOnly className="w-full py-1.5 px-2.5 bg-zinc-900/50 border border-zinc-700/60 text-zinc-400 rounded text-xs cursor-not-allowed" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Total Saldo Jaminan (Otomatis)</label>
+                          <input type="text" readOnly value={`Rp ${formatRupiah(batasMaksimal / 3)}`} className="w-full py-1.5 px-2.5 bg-zinc-900/50 border border-emerald-500/30 text-emerald-400 rounded text-xs font-semibold cursor-not-allowed" />
+                          <p className="text-[9px] text-zinc-500 mt-0.5">Batas maksimal pinjaman: 3x saldo = <span className="text-emerald-400/80">Rp {formatRupiah(batasMaksimal)}</span></p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : formData.jenis_agunan === 'Pendiri' ? (
+                    <div className="col-span-2 bg-amber-500/5 border border-amber-500/20 rounded-lg px-3 py-2">
+                      <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider mb-1">Agunan Pendiri (Tanpa Fisik)</p>
+                      <p className="text-[10px] text-zinc-500">Agunan ini menggunakan jaminan non-fisik. Insentif PJP 1% akan diterapkan otomatis.</p>
+                    </div>
+                  ) : null}
                 </>
               )}
               {showHargaPasar && (
