@@ -77,6 +77,7 @@ export default function PinjamanPage() {
     opsi_agunan: '',
     jenis_agunan: '',
     detail_agunan: '',
+    swkOption: '1%',
   });
 
   const [useBulan, setUseBulan] = useState(false);
@@ -108,7 +109,8 @@ export default function PinjamanPage() {
   const totalPot = admin + sosial + risiko + insentif + potMaterai + potNotaris + potBpjstk;
   const bersih = nilaiMurni - totalPot;
 
-  const swk = (nilaiMurni * 1) / 100;
+  const swkPct = (nilaiMurni * 1) / 100;
+  const swk = formData.swkOption === "1%" ? Math.max(swkPct, 25000) : 25000;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;
@@ -173,6 +175,7 @@ export default function PinjamanPage() {
       opsi_agunan: '',
       jenis_agunan: '',
       detail_agunan: '',
+      swkOption: '1%',
     });
     setUseBulan(false);
   };
@@ -280,6 +283,13 @@ export default function PinjamanPage() {
               <option value="Ya">Ya (2 lembar)</option>
             </select>
           </div>
+          <div>
+            <label className="block text-xs font-medium mb-0.5">Opsi SWK</label>
+            <select name="swkOption" value={formData.swkOption} onChange={handleChange} className="w-full px-2 py-1.5 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 text-sm">
+              <option value="1%">1% dari Pinjaman</option>
+              <option value="flat">Flat Rp 25.000</option>
+            </select>
+          </div>
           <div className="col-span-2">
             <label className="flex items-center gap-2">
               <input type="checkbox" name="tanpaAgunan" checked={formData.tanpaAgunan} onChange={handleChange} className="w-3.5 h-3.5" />
@@ -314,7 +324,7 @@ export default function PinjamanPage() {
               <div className="text-[11px] space-y-0.5 leading-tight">
                 <div>Pokok: <span className="font-bold">Rp {formatRupiah(Math.round(nilaiMurni / formData.Tenor))}</span></div>
                 <div>Bunga: <span className="font-bold">Rp {formatRupiah(Math.round((nilaiMurni * bungaTerkunci) / 100))}</span></div>
-                <div>SWK (1%): <span className="font-bold">Rp {formatRupiah(swk)}</span></div>
+                <div>SWK: <span className="font-bold">Rp {formatRupiah(swk)}</span></div>
                 <div className="border-t border-neutral-600 pt-0.5">Total Angsuran per Bulan: <span className="font-bold">Rp {formatRupiah(Math.round(nilaiMurni / formData.Tenor) + Math.round((nilaiMurni * bungaTerkunci) / 100) + Math.round(swk))}</span></div>
               </div>
             </div>
