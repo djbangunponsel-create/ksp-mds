@@ -265,23 +265,33 @@ export default function AnggotaPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 text-neutral-300">Jenis Kelamin</label>
-                  <input
-                    type="text"
+                  <select
                     name="Jenis_Kelamin"
                     value={formData.Jenis_Kelamin}
                     onChange={handleFormChange}
                     className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  />
+                  >
+                    <option value="">Pilih</option>
+                    <option value="Laki-laki">Laki-laki</option>
+                    <option value="Perempuan">Perempuan</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 text-neutral-300">Agama</label>
-                  <input
-                    type="text"
+                  <select
                     name="Agama"
                     value={formData.Agama}
                     onChange={handleFormChange}
                     className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  />
+                  >
+                    <option value="">Pilih</option>
+                    <option value="Islam">Islam</option>
+                    <option value="Kristen Protestan">Kristen Protestan</option>
+                    <option value="Kristen Katolik">Kristen Katolik</option>
+                    <option value="Hindu">Hindu</option>
+                    <option value="Buddha">Buddha</option>
+                    <option value="Khonghucu">Khonghucu</option>
+                  </select>
                 </div>
                 <div></div>
               </div>
@@ -347,13 +357,18 @@ export default function AnggotaPage() {
               <div className="grid grid-cols-4 gap-3">
                 <div>
                   <label className="block text-xs font-medium mb-1 text-neutral-300">Status Perkawinan</label>
-                  <input
-                    type="text"
+                  <select
                     name="Status_Perkawinan"
                     value={formData.Status_Perkawinan}
                     onChange={handleFormChange}
                     className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  />
+                  >
+                    <option value="">Pilih</option>
+                    <option value="Belum Kawin">Belum Kawin</option>
+                    <option value="Kawin">Kawin</option>
+                    <option value="Cerai Hidup">Cerai Hidup</option>
+                    <option value="Cerai Mati">Cerai Mati</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 text-neutral-300">Nama Pasangan</label>
@@ -435,13 +450,20 @@ export default function AnggotaPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 text-neutral-300">Hubungan Saudara</label>
-                  <input
-                    type="text"
+                  <select
                     name="Hubungan_Saudara"
                     value={formData.Hubungan_Saudara}
                     onChange={handleFormChange}
                     className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  />
+                  >
+                    <option value="">Pilih</option>
+                    <option value="Orang Tua">Orang Tua</option>
+                    <option value="Suami / Istri">Suami / Istri</option>
+                    <option value="Anak">Anak</option>
+                    <option value="Kakak / Adik">Kakak / Adik</option>
+                    <option value="Paman / Bibi">Paman / Bibi</option>
+                    <option value="Keponakan">Keponakan</option>
+                  </select>
                 </div>
                 <div></div>
               </div>
