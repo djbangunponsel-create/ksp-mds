@@ -34,6 +34,13 @@ interface Pinjaman {
   opsi_agunan: string;
   jenis_agunan: string;
   detail_agunan: string;
+  agunan_no_surat: string;
+  agunan_nama_pemegang: string;
+  agunan_lokasi: string;
+  agunan_luas: string;
+  agunan_tgl_terbit: string;
+  agunan_berlaku_sampai: string;
+  agunan_atas_nama: string;
 }
 
 const jenisPinjamanOptions = [
@@ -76,6 +83,13 @@ export default function PinjamanPage() {
     opsi_agunan: '',
     jenis_agunan: '',
     detail_agunan: '',
+    agunan_no_surat: '',
+    agunan_nama_pemegang: '',
+    agunan_lokasi: '',
+    agunan_luas: '',
+    agunan_tgl_terbit: '',
+    agunan_berlaku_sampai: '',
+    agunan_atas_nama: '',
     swkOption: '1%',
     hargaPasarAgunan: 0,
   });
@@ -196,6 +210,13 @@ export default function PinjamanPage() {
       opsi_agunan: formData.opsi_agunan,
       jenis_agunan: formData.jenis_agunan,
       detail_agunan: formData.detail_agunan,
+      agunan_no_surat: formData.agunan_no_surat,
+      agunan_nama_pemegang: formData.agunan_nama_pemegang,
+      agunan_lokasi: formData.agunan_lokasi,
+      agunan_luas: formData.agunan_luas,
+      agunan_tgl_terbit: formData.agunan_tgl_terbit,
+      agunan_berlaku_sampai: formData.agunan_berlaku_sampai,
+      agunan_atas_nama: formData.agunan_atas_nama,
     };
     setPinjaman(prev => [...prev, newPinjaman]);
     setFormData({
@@ -211,6 +232,13 @@ export default function PinjamanPage() {
       opsi_agunan: '',
       jenis_agunan: '',
       detail_agunan: '',
+      agunan_no_surat: '',
+      agunan_nama_pemegang: '',
+      agunan_lokasi: '',
+      agunan_luas: '',
+      agunan_tgl_terbit: '',
+      agunan_berlaku_sampai: '',
+      agunan_atas_nama: '',
       swkOption: '1%',
       hargaPasarAgunan: 0,
     });
@@ -291,6 +319,41 @@ export default function PinjamanPage() {
                     <label className="block text-xs font-medium text-zinc-400 mb-1">Detail / No. Agunan</label>
                     <input type="text" name="detail_agunan" value={formData.detail_agunan} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="Nomor/Keterangan" />
                   </div>
+                  {formData.jenis_agunan && (
+                    <div className="col-span-2 bg-zinc-800/40 border border-zinc-700/50 rounded-lg px-3 py-2">
+                      <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-2.5">Detail Jaminan</p>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">No. Surat / BPKB</label>
+                          <input type="text" name="agunan_no_surat" value={formData.agunan_no_surat} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="123/BPKB/2024" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Nama Pemegang Jaminan</label>
+                          <input type="text" name="agunan_nama_pemegang" value={formData.agunan_nama_pemegang} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Nama sesuai dokumen" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Atas Nama</label>
+                          <input type="text" name="agunan_atas_nama" value={formData.agunan_atas_nama} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Nama pemilik agunan" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Lokasi / Alamat Agunan</label>
+                          <input type="text" name="agunan_lokasi" value={formData.agunan_lokasi} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Alamat / Kelurahan" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Luas</label>
+                          <input type="text" name="agunan_luas" value={formData.agunan_luas} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Contoh: 120 m2" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Tanggal Terbit</label>
+                          <input type="date" name="agunan_tgl_terbit" value={formData.agunan_tgl_terbit} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30 [color-scheme:dark]" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Berlaku Sampai</label>
+                          <input type="date" name="agunan_berlaku_sampai" value={formData.agunan_berlaku_sampai} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30 [color-scheme:dark]" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
               {showHargaPasar && (
