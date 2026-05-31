@@ -263,7 +263,7 @@ export default function AnggotaPage() {
                     required
                   />
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-1">
                   <label className="block text-xs font-medium mb-1 text-neutral-300">Nama Anggota</label>
                   <input
                     type="text"
@@ -304,10 +304,19 @@ export default function AnggotaPage() {
                     <option value="Khonghucu">Khonghucu</option>
                   </select>
                 </div>
-                <div></div>
               </div>
 
               <div className="grid grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">NIK</label>
+                  <input
+                    type="text"
+                    name="NIK"
+                    value={formData.NIK}
+                    onChange={handleFormChange}
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 text-neutral-300">Tempat Lahir</label>
                   <input
@@ -338,7 +347,6 @@ export default function AnggotaPage() {
                     className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
-                <div></div>
               </div>
 
               <div className="grid grid-cols-4 gap-3">
