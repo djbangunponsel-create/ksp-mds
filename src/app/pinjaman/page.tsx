@@ -48,6 +48,10 @@ interface Pinjaman {
   agunan_tgl_terbit: string;
   agunan_berlaku_sampai: string;
   agunan_atas_nama: string;
+  harga_likuidasi: number;
+  harga_est_fisik: number;
+  harga_est_bpkb: number;
+  harga_est_lain: number;
 }
 
 const jenisPinjamanOptions = [
@@ -104,6 +108,10 @@ export default function PinjamanPage() {
     agunan_tgl_terbit: '',
     agunan_berlaku_sampai: '',
     agunan_atas_nama: '',
+    harga_likuidasi: 0,
+    harga_est_fisik: 0,
+    harga_est_bpkb: 0,
+    harga_est_lain: 0,
     swkOption: '1%',
     hargaPasarAgunan: 0,
   });
@@ -131,9 +139,11 @@ export default function PinjamanPage() {
   const showHargaPasar = isAgunanFisik || isSimpanan;
 
   let batasMaksimal = 0;
+  let hargaLik = 0;
   if (isAgunanFisik) {
+    hargaLik = Math.round(formData.harga_likuidasi || formData.hargaPasarAgunan || 0);
     const pct = ['SHM', 'Akta Tanah', 'Surat 3 Serangkai'].includes(formData.jenis_agunan) ? 0.8 : 0.7;
-    batasMaksimal = Math.round((formData.hargaPasarAgunan || 0) * pct);
+    batasMaksimal = Math.round(hargaLik * pct);
   } else if (isSimpanan) {
     let totalSaldo = 0;
     if (typeof window !== 'undefined') {
@@ -152,8 +162,10 @@ export default function PinjamanPage() {
     batasMaksimal = Math.round(totalSaldo * 3);
   }
 
-  const melebihiBatas = nilaiMurni > batasMaksimal && batasMaksimal > 0;
-  const needPJP = melebihiBatas || isPendiri;
+  const gagalLikuidasi = isAgunanFisik && hargaLik > 0 && nilaiMurni > hargaLik;
+  const gagalBatas = nilaiMurni > batasMaksimal && batasMaksimal > 0;
+  const gagalCair = gagalLikuidasi || gagalBatas;
+  const needPJP = gagalCair || isPendiri;
   const insentifPJP = needPJP ? Math.round(nilaiMurni * 0.01) : 0;
 
   const materaiJumlah = nonFisik ? 1 : (formData.notaris === 'Ya' ? 2 : 1);
@@ -180,7 +192,7 @@ export default function PinjamanPage() {
       setFormData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
     } else if (name === 'Tenor' || name === 'bpjstkBulan') {
       setFormData(prev => ({ ...prev, [name]: parseInt(value) || 0 }));
-    } else if (name === 'Nominal_Pinjaman' || name === 'hargaPasarAgunan') {
+    } else if (name === 'Nominal_Pinjaman' || name === 'hargaPasarAgunan' || name === 'harga_likuidasi') {
       const raw = value.replace(/\./g, '');
       setFormData(prev => ({ ...prev, [name]: parseInt(raw) || 0 }));
     } else {
@@ -238,6 +250,10 @@ export default function PinjamanPage() {
       agunan_tgl_terbit: formData.agunan_tgl_terbit,
       agunan_berlaku_sampai: formData.agunan_berlaku_sampai,
       agunan_atas_nama: formData.agunan_atas_nama,
+      harga_likuidasi: formData.harga_likuidasi,
+      harga_est_fisik: formData.harga_est_fisik,
+      harga_est_bpkb: formData.harga_est_bpkb,
+      harga_est_lain: formData.harga_est_lain,
     };
     setPinjaman(prev => [...prev, newPinjaman]);
     setFormData({
@@ -267,6 +283,10 @@ export default function PinjamanPage() {
       agunan_tgl_terbit: '',
       agunan_berlaku_sampai: '',
       agunan_atas_nama: '',
+      harga_likuidasi: 0,
+      harga_est_fisik: 0,
+      harga_est_bpkb: 0,
+      harga_est_lain: 0,
       swkOption: '1%',
       hargaPasarAgunan: 0,
     });
@@ -371,6 +391,15 @@ export default function PinjamanPage() {
                           <label className="block text-[10px] font-medium text-zinc-500 mb-1">Lokasi / Alamat Lengkap</label>
                           <input type="text" name="agunan_lokasi" value={formData.agunan_lokasi} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Alamat / Kelurahan / Kecamatan" />
                         </div>
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Nilai Jual Pasar</label>
+                          <input type="text" name="hargaPasarAgunan" value={formData.hargaPasarAgunan ? formatRupiah(formData.hargaPasarAgunan) : ''} onChange={(e) => handleChange(e)} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Contoh: 250.000.000" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Harga Likuidasi</label>
+                          <input type="text" name="harga_likuidasi" value={formData.harga_likuidasi ? formatRupiah(formData.harga_likuidasi) : ''} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-amber-500/40 text-amber-300 rounded text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-amber-500/40" placeholder="Contoh: 220.000.000" />
+                          <p className="text-[9px] text-zinc-500 mt-0.5">Dipindai dari harga pasar sebagai dasar likuidasi.</p>
+                        </div>
                       </div>
                     </div>
                   ) : (formData.jenis_agunan === 'BPKB Roda 2' || formData.jenis_agunan === 'BPKB Roda 4' || formData.jenis_agunan === 'BPKB Roda 6/8') ? (
@@ -386,20 +415,29 @@ export default function PinjamanPage() {
                           <input type="text" name="agunan_identitas_kendaraan" value={formData.agunan_identitas_kendaraan} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Merek / Tipe / Warna / Tahun" />
                         </div>
                         <div>
-                          <label className="block text-[px] font-medium text-zinc-500 mb-1">No. Polisi</label>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">No. Polisi</label>
                           <input type="text" name="agunan_no_polisi" value={formData.agunan_no_polisi} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Contoh: DD 1234 AB" />
                         </div>
                         <div>
-                          <label className="block text-[px] font-medium text-zinc-500 mb-1">No. Rangka</label>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">No. Rangka</label>
                           <input type="text" name="agunan_no_rangka" value={formData.agunan_no_rangka} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Nomor rangka kendaraan" />
                         </div>
                         <div>
-                          <label className="block text-[px] font-medium text-zinc-500 mb-1">No. Mesin</label>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">No. Mesin</label>
                           <input type="text" name="agunan_no_mesin" value={formData.agunan_no_mesin} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Nomor mesin kendaraan" />
                         </div>
                         <div>
-                          <label className="block text-[px] font-medium text-zinc-500 mb-1">Nama Pemegang BPKB</label>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Nama Pemegang BPKB</label>
                           <input type="text" name="agunan_nama_pemilik" value={formData.agunan_nama_pemilik} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Nama tertera di BPKB" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Nilai Jual Pasar</label>
+                          <input type="text" name="hargaPasarAgunan" value={formData.hargaPasarAgunan ? formatRupiah(formData.hargaPasarAgunan) : ''} onChange={(e) => handleChange(e)} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-zinc-700 text-neutral-100 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30" placeholder="Contoh: 120.000.000" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-medium text-zinc-500 mb-1">Harga Likuidasi</label>
+                          <input type="text" name="harga_likuidasi" value={formData.harga_likuidasi ? formatRupiah(formData.harga_likuidasi) : ''} onChange={handleChange} className="w-full py-1.5 px-2.5 bg-zinc-900 border border-amber-500/40 text-amber-300 rounded text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-amber-500/40" placeholder="Contoh: 100.000.000" />
+                          <p className="text-[9px] text-zinc-500 mt-0.5">Dipindai dari nilai pasar sebagai dasar likuidasi.</p>
                         </div>
                       </div>
                     </div>
@@ -426,9 +464,9 @@ export default function PinjamanPage() {
                   ) : null}
                 </>
               )}
-              {showHargaPasar && (
+              {showHargaPasar && !isSimpanan && (
                 <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Harga Pasar Agunan</label>
+                  <label className="block text-xs font-medium text-zinc-400 mb-1">Harga Pasar Agunan (Scan)</label>
                   <input type="text" name="hargaPasarAgunan" value={formData.hargaPasarAgunan ? formatRupiah(formData.hargaPasarAgunan) : ''} onChange={handleChange} className="w-full py-2 px-3 bg-zinc-800 border border-zinc-700 text-neutral-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="Contoh: 50.000.000" />
                 </div>
               )}
@@ -480,9 +518,14 @@ export default function PinjamanPage() {
                   <p className="text-[10px] text-zinc-500 mt-0.5">Dikenakan otomatis karena agunan tidak cover atau jenis agunan Pendiri/Simpanan.</p>
                 </div>
               )}
-              {melebihiBatas && !isSimpanan && (
+              {gagalBatas && !isSimpanan && (
                 <div className="col-span-2 bg-red-500/10 border border-red-500/30 rounded-lg p-2">
                   <p className="text-xs text-red-400 font-medium">Peringatan: Nilai agunan tidak mengcover nominal pinjaman!</p>
+                </div>
+              )}
+              {gagalLikuidasi && (
+                <div className="col-span-2 bg-red-500/10 border border-red-500/30 rounded-lg p-2">
+                  <p className="text-xs text-red-400 font-medium">Peringatan: Harga Likuidasi lebih kecil dari nominal pinjaman!</p>
                 </div>
               )}
               {isSimpanan && nilaiMurni > batasMaksimal && (
@@ -507,7 +550,7 @@ export default function PinjamanPage() {
                   {(batasMaksimal > 0 || isSimpanan) && (
                     <div className="flex justify-between text-zinc-500 text-[10px]">
                       <span>Batas Maksimal Pinjaman</span>
-                      <span>Rp {formatRupiah(batasMaksimal)}</span>
+                      <span>Rp {formatRupiah(batasMaksimal)} {isAgunanFisik ? <span className="text-amber-400/80">(Likuidasi: Rp {formatRupiah(hargaLik)})</span> : ''}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-red-400/80">
@@ -528,7 +571,7 @@ export default function PinjamanPage() {
                       <span>Rp {formatRupiah(insentif)}</span>
                     </div>
                   )}
-                  {(formData.jenis_agunan === 'Pendiri' || formData.jenis_agunan === 'Simpanan (Semua jenis simpanan)' || melebihiBatas) && (
+                  {(formData.jenis_agunan === 'Pendiri' || formData.jenis_agunan === 'Simpanan (Semua jenis simpanan)' || gagalBatas) && (
                     <div className="flex justify-between text-red-400/80">
                       <span>Pot. Insentif PJP (1%)</span>
                       <span>Rp {formatRupiah(insentifPJP)}</span>
