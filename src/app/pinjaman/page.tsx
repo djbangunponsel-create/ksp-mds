@@ -108,6 +108,8 @@ export default function PinjamanPage() {
   const totalPot = admin + sosial + risiko + insentif + potMaterai + potNotaris + potBpjstk;
   const bersih = nilaiMurni - totalPot;
 
+  const swk = (nilaiMurni * 1) / 100;
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;
     if (type === 'checkbox') {
@@ -312,7 +314,8 @@ export default function PinjamanPage() {
               <div className="text-[11px] space-y-0.5 leading-tight">
                 <div>Pokok: <span className="font-bold">Rp {formatRupiah(Math.round(nilaiMurni / formData.Tenor))}</span></div>
                 <div>Bunga: <span className="font-bold">Rp {formatRupiah(Math.round((nilaiMurni * bungaTerkunci) / 100))}</span></div>
-                <div className="border-t border-neutral-600 pt-0.5">Total: <span className="font-bold">Rp {formatRupiah(Math.round(nilaiMurni / formData.Tenor) + Math.round((nilaiMurni * bungaTerkunci) / 100))}</span></div>
+                <div>SWK (1%): <span className="font-bold">Rp {formatRupiah(swk)}</span></div>
+                <div className="border-t border-neutral-600 pt-0.5">Total Angsuran per Bulan: <span className="font-bold">Rp {formatRupiah(Math.round(nilaiMurni / formData.Tenor) + Math.round((nilaiMurni * bungaTerkunci) / 100) + Math.round(swk))}</span></div>
               </div>
             </div>
           )}
