@@ -253,11 +253,22 @@ export default function AnggotaPage() {
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-xs font-medium mb-1 text-neutral-300">NIK</label>
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">No. Anggota</label>
                   <input
                     type="text"
-                    name="NIK"
-                    value={formData.NIK}
+                    name="No_Anggota"
+                    value={formData.No_Anggota}
+                    onChange={handleFormChange}
+                    className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    required
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium mb-1 text-neutral-300">Nama Anggota</label>
+                  <input
+                    type="text"
+                    name="NAMA_ANGGOTA"
+                    value={formData.NAMA_ANGGOTA}
                     onChange={handleFormChange}
                     className="w-full py-1.5 px-3 bg-neutral-700 text-neutral-100 rounded border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     required
